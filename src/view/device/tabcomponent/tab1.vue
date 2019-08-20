@@ -18,16 +18,12 @@
                     <TabPane label="基本信息" class="tabpane">
                         <Row style="margin:20px 40px 20px 20px;">
                             <Col span="24">
-                                <!-- <Button  type="primary" ghost icon="close" @click="test2()">BUt</Button> -->
-                                <!-- <Button v-if="$hasPower('13')"  type="primary" ghost icon="close" @click="test()">Tset</Button>
-                                <Button v-if="$hasPower('13')"  type="primary" ghost icon="close" @click="test1()">Find</Button> -->
-                                <!-- <Button v-if="$hasPower('13')"  type="primary" ghost icon="close" @click="testdel()">Del</Button>  -->
-                                <Button v-if="$hasPower('13')"  type="primary" ghost icon="close" @click="closeSn()">关闭</Button>
-                                <Button v-if="$hasPower('14')"  type="primary" ghost icon="hammer"  @click="openset">配置</Button>
-                                <Button v-if="$hasPower('15')"  type="primary" ghost icon="gear-b" @click="openroot">Root指派</Button>
-                                <Button v-if="$hasPower('16')"  type="primary" ghost icon="toggle-filled" @click="addblack">加入黑名单</Button>
-                                <Button v-if="$hasPower('17')"  type="primary" ghost icon="ios-nutrition" @click="openwh">更新维护</Button>
-                                <Button v-if="$hasPower('18')"  type="primary" ghost icon="ios-cloud-download" @click="upgrade">固件升级</Button>
+                               <Button type="primary" ghost icon="close" @click="closeSn()">关闭</Button>
+                                <Button type="primary" ghost icon="hammer"  @click="openset">配置</Button>
+                                <Button type="primary" ghost icon="gear-b" @click="openroot">Root指派</Button>
+                                <Button type="primary" ghost icon="toggle-filled" @click="addblack">加入黑名单</Button>
+                                <Button type="primary" ghost icon="ios-nutrition" @click="openwh">更新维护</Button>
+                                <Button type="primary" ghost icon="ios-cloud-download" @click="upgrade">固件升级</Button>
                             </Col>
                         </Row>
                         <Row style="margin:5px 20px" v-show="tab1data.sn!=undefined&&tab1data.sn!=''">
@@ -771,7 +767,7 @@
             }
         },
         mounted () {
-            this.getalleid();
+            // this.getalleid();
             // console.log("Math.random():"+Math.random());
         },
         created(){

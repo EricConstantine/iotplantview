@@ -44,7 +44,7 @@
                 :pointdata2="pointdata2" :pointdata3="pointdata3" :pointdata4="pointdata4" :pointdata5="pointdata5" 
                 :pointdata6="pointdata6" :pointdata7="pointdata7" :pointdata8="pointdata8" :pointdata9="pointdata9" :pointdata="pointdata"  :downurl="downurl" :tab1data="tab1data" @initcontent="initcontent" @sendTabData="sendTabData"  @closeSn="closeSn" @exportNet="exportNet"  :tablebaseloading="table.base.loading"></tab1><!--@submitPushWeb="submitPushWeb"-->
             </TabPane>
-            <TabPane label="设备现场数据" class="tabpane" :style="panestyle">
+            <!-- <TabPane label="设备现场数据" class="tabpane" :style="panestyle">
                 <tab2 :tab2treedata="tab2treedata" :sn="selectionsn"></tab2>
             </TabPane>
             <TabPane label="日志检索" class="tabpane" :style="panestyle">
@@ -52,7 +52,7 @@
             </TabPane>
             <TabPane label="授权管理" class="tabpane" :style="panestyle">
                   <tab10 :sn="selectionsn" @authensetkey="authensetkey" :empower="selectempower" :tab10authendata="tab10authendata" ></tab10>
-            </TabPane>
+            </TabPane> -->
         </Tabs>
       </div>
      
@@ -255,7 +255,7 @@
                         "Content-Type":"application/json;charset=utf-8"
                     }
                 }).then(function(response) {
-                    console.log('查询moogo获得测点数据')
+                    console.log('查询设备下的所有传感器')
                      console.log(response)
                     self.tab6logdata = [];
                     self.pointdata0=[];
@@ -301,40 +301,34 @@
             initcontent(message_obj){
                 //页面刚进入时开启长连接
                 let self = this;
-                this.$axios.get("/iotplant/device/pagedata?page=0&size=10000&sort=name,asc&keywords="+'', {}, {
-                    headers: {
-                        "Content-Type":"application/json;charset=utf-8"
-                    },
-                }).then(function(response) {
+                self.table.loading = true;
+                console.log(this.$axios)
+                this.$axios.get('/iotplant/deivce/pagedata?page=0&size=10000&sort=name,asc')
+                .then(function(response){
                     self.table.loading = false;//取消loading效果
-                    console.log("开始初始化网关树结构")
-                    console.log(response.data)
+                    console.log('初始化设备树')
+                    console.log(response)
                     let contents = [];
                     for(let i=0;i<response.data.content.length;i++){
                         let content = {expand: true};
-                        content.title = response.data.content[i].name+'-'+response.data.content[i].description;
+                        content.title = response.data.content[i].name+'-'+response.data.content[i].describe;
                         content.color = '#bbbec4';
                         // content.buttontype = 'text';
                         if(self.selectionsn == response.data.content[i].sn){
-                             content.buttontype = 'primary';
+                            content.buttontype = 'primary';
                         }else{
                             content.buttontype = 'text'
                         }
-
                         if(i == 0) content.selected = true;
                         content.id = response.data.content[i].id;
                         content.name = response.data.content[i].name;
-                        content.eid = response.data.content[i].eid;
                         content.sn = response.data.content[i].sn;
-                        content.bindcode = response.data.content[i].bindcode;
-                        content.online = response.data.content[i].online;
+                        content.describe = response.data.content[i].describe;
+                        content.location = response.data.content[i].location;
+                        content.treaty = response.data.content[i].treaty;
                         content.description = response.data.content[i].description;
-                        content.basemsg = response.data.content[i].basemsg;
-                        // content.pointmsg = response.data.content[i].pointmsg;
-                        content.pushweb = response.data.content[i].pushweb;
-                        content.storagedb = response.data.content[i].storagedb;
-                        content.aipd = response.data.content[i].aipd;
-                        content.empower = response.data.content[i].empower;
+                        content.createtime = response.data.content[i].createtime;
+                        content.userid = response.data.content[i].userid;
                         contents.push(content);
                     }
                     self.gatewaydata[0].children = contents;
@@ -344,25 +338,88 @@
                         self.selectionsn = self.gatewaydata[0].children[0].sn;
                     }
                     console.log(contents)
-                    //有值代表需要更新在线状态  没有值代表第一次进来需要初始化WS连接
-                    if(message_obj) {
-                        for(let j=0;j<self.gatewaydata[0].children.length;j++){
-                            let isonline = false;
-                            for(let i=0;i<message_obj.length;i++){
-                                if(self.gatewaydata[0].children[j].sn == message_obj[i].sn){
-                                    isonline = true;
-                                }
-                            }
-                            if(isonline){
-                                self.gatewaydata[0].children[j].color = '#19be6b';
-                            }else{
-                                self.gatewaydata[0].children[j].color = '#bbbec4';
-                            }
-                        }
-                    }
-                }).catch( function(response) {
-                    self.$util.logout(self,response);
-                });
+                //     //有值代表需要更新在线状态  没有值代表第一次进来需要初始化WS连接
+                //     if(message_obj) {
+                //         for(let j=0;j<self.gatewaydata[0].children.length;j++){
+                //             let isonline = false;
+                //             for(let i=0;i<message_obj.length;i++){
+                //                 if(self.gatewaydata[0].children[j].sn == message_obj[i].sn){
+                //                     isonline = true;
+                //                 }
+                //             }
+                //             if(isonline){
+                //                 self.gatewaydata[0].children[j].color = '#19be6b';
+                //             }else{
+                //                 self.gatewaydata[0].children[j].color = '#bbbec4';
+                //             }
+                //         }
+                }).catch((response)=>{
+                    console.log(response);
+                })
+
+                // let self = this;
+                // this.$axios.get("/iotplant/device/pagedata?page=0&size=10000&sort=name,asc&keywords="+'11', {}, {
+                //     headers: {
+                //         "Content-Type":"application/json;charset=utf-8"
+                //     },
+                // }).then(function(response) {
+                //     self.table.loading = false;//取消loading效果
+                //     console.log("开始初始化网关树结构")
+                //     console.log(response.data)
+                //     let contents = [];
+                //     for(let i=0;i<response.data.content.length;i++){
+                //         let content = {expand: true};
+                //         content.title = response.data.content[i].name+'-'+response.data.content[i].description;
+                //         content.color = '#bbbec4';
+                //         // content.buttontype = 'text';
+                //         if(self.selectionsn == response.data.content[i].sn){
+                //              content.buttontype = 'primary';
+                //         }else{
+                //             content.buttontype = 'text'
+                //         }
+
+                //         if(i == 0) content.selected = true;
+                //         content.id = response.data.content[i].id;
+                //         content.name = response.data.content[i].name;
+                //         content.eid = response.data.content[i].eid;
+                //         content.sn = response.data.content[i].sn;
+                //         content.bindcode = response.data.content[i].bindcode;
+                //         content.online = response.data.content[i].online;
+                //         content.description = response.data.content[i].description;
+                //         content.basemsg = response.data.content[i].basemsg;
+                //         // content.pointmsg = response.data.content[i].pointmsg;
+                //         content.pushweb = response.data.content[i].pushweb;
+                //         content.storagedb = response.data.content[i].storagedb;
+                //         content.aipd = response.data.content[i].aipd;
+                //         content.empower = response.data.content[i].empower;
+                //         contents.push(content);
+                //     }
+                //     self.gatewaydata[0].children = contents;
+                //     if(self.selectionsn == ''){
+                //         self.gatewaydata[0].children[0].buttontype = 'primary';
+                //         self.handleTreeClick(self.gatewaydata[0].children[0]);
+                //         self.selectionsn = self.gatewaydata[0].children[0].sn;
+                //     }
+                //     console.log(contents)
+                //     //有值代表需要更新在线状态  没有值代表第一次进来需要初始化WS连接
+                //     if(message_obj) {
+                //         for(let j=0;j<self.gatewaydata[0].children.length;j++){
+                //             let isonline = false;
+                //             for(let i=0;i<message_obj.length;i++){
+                //                 if(self.gatewaydata[0].children[j].sn == message_obj[i].sn){
+                //                     isonline = true;
+                //                 }
+                //             }
+                //             if(isonline){
+                //                 self.gatewaydata[0].children[j].color = '#19be6b';
+                //             }else{
+                //                 self.gatewaydata[0].children[j].color = '#bbbec4';
+                //             }
+                //         }
+                //     }
+                // }).catch( function(response) {
+                //     self.$util.logout(self,response);
+                // });
             },
             remove (root, node, data) {
                 const parentKey = root.find(el => el === node).parent;

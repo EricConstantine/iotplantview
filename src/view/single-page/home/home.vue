@@ -74,7 +74,7 @@ export default {
   methods: { 
 			test(){
         console.log(this.$ajax)
-        this.$ajax.get('/iotplant/user/test?keywords=332')
+        this.$axios.get('/iotplant/user/test?keywords=332')
         .then((response)=>{
             console.log(response)
         }).catch((response)=>{
