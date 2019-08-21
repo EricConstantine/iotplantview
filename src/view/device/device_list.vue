@@ -246,54 +246,18 @@
                 // this.pointdata = JSON.parse(pointmsg);
                 //初始化基本信息列表
                 this.tab1data = data;
-                this.downurl = '';//初始化下载连接按钮
                 let self = this;
                 let param = new FormData(); //创建form对象
-                param.append('sn',data.sn);//ID
-                self.$axios.post('/netgate-server/pointmsg/find',  param, {
+                param.append('sn',data.id);//ID
+                self.$axios.post('/iotplant/sensor/find',  param, {
                     headers: {
                         "Content-Type":"application/json;charset=utf-8"
                     }
                 }).then(function(response) {
-                    console.log('查询设备下的所有传感器')
-                     console.log(response)
-                    self.tab6logdata = [];
-                    self.pointdata0=[];
-                    self.pointdata1=[];
-                    self.pointdata2=[];
-                    self.pointdata3=[];
-                    self.pointdata4=[];
-                    self.pointdata5=[];
-                    self.pointdata6=[];
-                    self.pointdata7=[];
-                    self.pointdata8=[];
-                    self.pointdata9=[];
-                    if( response.data  == "") return;
-                    if(response.data.data0!="") {
-                        self.pointdata0=JSON.parse(response.data.data0);
-                    }if(response.data.data1!=""){
-                        self.pointdata1=JSON.parse(response.data.data1);
-                    }if(response.data.data1!=""){
-                        self.pointdata2=JSON.parse(response.data.data2);
-                    }if(response.data.data1!=""){
-                        self.pointdata3=JSON.parse(response.data.data3);
-                    }if(response.data.data1!=""){
-                        self.pointdata4=JSON.parse(response.data.data4);
-                    }if(response.data.data1!=""){
-                        self.pointdata5=JSON.parse(response.data.data5);
-                    }if(response.data.data1!=""){
-                        self.pointdata6=JSON.parse(response.data.data6);
-                    }if(response.data.data1!=""){
-                        self.pointdata7=JSON.parse(response.data.data7);
-                    }if(response.data.data1!=""){
-                        self.pointdata8=JSON.parse(response.data.data8);
-                    }if(response.data.data1!=""){
-                        self.pointdata9=JSON.parse(response.data.data9);
-                    }else self.pointdata=[]
-                    console.log("获得测点数据")
-                    // console.log(self.pointdata)
+                    console.log(response.data.data)
+                    
                 }).catch( function(response) {
-                    self.$Message.error('请求测点数据失败');
+                    self.$Message.error('获取传感器数据失败');
                     console.log(response)
                 });
                 
@@ -329,14 +293,19 @@
                         content.description = response.data.content[i].description;
                         content.createtime = response.data.content[i].createtime;
                         content.userid = response.data.content[i].userid;
+                        content.color = 'bbbec4';
                         contents.push(content);
                     }
                     self.gatewaydata[0].children = contents;
                     if(self.selectionsn == ''){
                         self.gatewaydata[0].children[0].buttontype = 'primary';
+                        //初始化选中
                         self.handleTreeClick(self.gatewaydata[0].children[0]);
                         self.selectionsn = self.gatewaydata[0].children[0].sn;
                     }
+                    //  for(let j=0;j<self.gatewaydata[0].children.length;j++){
+                    //          self.gatewaydata[0].children[j].color = '#19be6b';
+                    // }
                     console.log(contents)
                 //     //有值代表需要更新在线状态  没有值代表第一次进来需要初始化WS连接
                 //     if(message_obj) {
