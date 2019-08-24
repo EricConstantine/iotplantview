@@ -83,7 +83,8 @@ export default [
     name: 'device',
     component: Main,
     meta: {
-      hideInBread: true
+      icon: 'logo-buffer',
+      title: '组件'
     },
     children: [
       {
@@ -91,9 +92,18 @@ export default [
         name: 'device_list',
         meta: {
           icon: '_qq',
-          title: '设备管理'
+          title: '设备列表'
         },
         component: () => import('@/view/device/device_list.vue')
+      },
+      {
+        path: 'device_manage',
+        name: 'device_manage',
+        meta: {
+          icon: '_qq',
+          title: '设备管理'
+        },
+        component: () => import('@/view/device/manage/device_manage.vue')
       }
     ]
   },
