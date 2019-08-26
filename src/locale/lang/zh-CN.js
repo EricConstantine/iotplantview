@@ -41,6 +41,8 @@ export default {
   cropper_page: '图片裁剪',
   message_page: '消息中心',
   device_manage: '设备管理',
+  maptest: '地图测试',
+  device_edit: '设备添加',
   device_list: '设备列表',
   tree_table_page: '树状表格',
   org_tree_page: '组织结构树',

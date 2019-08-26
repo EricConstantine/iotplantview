@@ -5,68 +5,67 @@
 </style>
 <template>
     <div>
-       test{{pid}}
-        <!-- <Row class="expand-row" v-for="(item ,i) in sdata" :key="i">
-            <Col span="5">
+         <Row v-for="(item,index) in sdata" :key = index>
+            <Col span="6">
                 <span class="expand-key">名称: </span>
-                <span class="expand-value">{{ item.name }}</span>
+                <span class="expand-value">【{{ item.name }}】</span>
             </Col>
-            <Col span="5">
+            <Col span="6">
                 <span class="expand-key">KEY: </span>
                 <span class="expand-value">{{ item.skey }}</span>
             </Col>
-            <Col span="5">
+            <Col span="6">
                 <span class="expand-key">类型: </span>
                 <span class="expand-value">{{ item.stype }}</span>
             </Col>
-            <Col span="5">
-                <span class="expand-key">数值: </span>
-                <span class="expand-value">{{ item.svalue }}</span>
-            </Col>
-             <Col span="4">
+            <Col span="6">
                 <span class="expand-key">单位: </span>
                 <span class="expand-value">{{ item.sunit }}</span>
             </Col>
-        </Row> -->
-        <!-- <Row>
-            <Col span="8">
-                <span class="expand-key">Favorite book: </span>
-                <span class="expand-value">《{{ row.book }}》</span>
-            </Col>
-            <Col span="8">
-                <span class="expand-key">Favorite movie: </span>
-                <span class="expand-value">{{ row.movie }}</span>
-            </Col>
-            <Col span="8">
-                <span class="expand-key">Favorite music: </span>
-                <span class="expand-value">{{ row.music }}</span>
-            </Col>
-        </Row> -->
+        </Row> 
     </div>
 </template>
 <script>
-export default {
-  props: {
-    pid: String
-  },
-  data () {
-    sensordata:[]
-  },
-  mounted () {
+    export default {
+        props: {
+            row: String
+        },
+         data () {
+            return {
+                sdata:{}
+            }
+         },
+         methods: {
+             initEx(pid){
+                let self = this;
+                this.$axios.get('/iotplant/sensor/getsensors?pid='+pid, {}, {
+                    headers: {
+                        "Content-Type":"application/json;charset=utf-8"
+                    },
+                }).then(function(response) {
+                    console.log(999)
+                    console.log(response.data.data)
+                    self.sdata = response.data.data;
 
-  },
-  created () {
-  },
-  watch: {
-    // 监听双向绑定数据变化  调用handleOn方法  存入localStorage 做到双向绑定
-    tab2treedata: {
-      handler: function (val, oldVal) {
-        console.log('监听到了')
-        console.log(val)
-        //   this.sensordata = val;
-        //   this.refreshTreeData(val);
-      }
-    }
-  }
-}
+                }).catch( function(response) {
+                    console.log(response)
+                });
+             }
+         },
+         mounted () {
+            
+        },
+        created(){
+        },
+        watch:{
+          //监听双向绑定数据变化  调用handleOn方法  存入localStorage 做到双向绑定
+          row: {
+                immediate: true,    // 这句重要
+                handler (val) {
+                    this.initEx(val)
+                    console.log('action Value:' + val);
+                }
+            }
+        }
+    };
 </script>
