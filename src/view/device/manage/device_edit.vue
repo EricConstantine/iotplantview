@@ -32,8 +32,22 @@
           <FormItem label="设备协议" prop="treaty">
             <Input v-model="formValidate.treaty" placeholder="请输入设备协议"></Input>
           </FormItem>
-          <FormItem label="传感器" prop="treaty">
-            <Input v-model="formValidate.treaty" placeholder="请输入设备协议"></Input>
+          <FormItem label="传感器" prop="sensors">
+            <Button type="success" icon="plus-round" @click="handleAdd()">增加</Button>
+            <Form ref="formsensor" :rules="sensorvalidate" >
+            <Row v-for="(item,index) in formValidate.sensordata" :key="index" style="margin-bottom:2px">
+              <FormItem label="设备名称" prop="name">
+                <Input v-model="item.name" placeholder="传感器名称..." style="width: 20%;float:left;margin-left:2%">
+                    <span slot="append"><Icon type="md-close" @click="handleDelete(index)" /></span>
+                </Input>
+              </FormItem>
+              <Input v-model="item.skey" placeholder="传感器KEY..."  style="width: 20%;margin-left:2%" />
+              <Select v-model="item.stype" style="width: 20%;margin-left:2%">
+                  <Option v-for="sintype in sensortype" :value="sintype" :key="sintype">{{ sintype }}</Option>
+              </Select>
+              <Input v-model="item.sunit" placeholder="传感器单位..."  style="width: 20%;margin-left:2%" />
+            </Row>
+             </Form>
           </FormItem>
           <FormItem label="设备位置" prop="location">
             <div class="mapbox">  
@@ -112,6 +126,8 @@ export default {
       }
     };
     return {
+      sensortype:['温度','光照','数值','湿度'],
+      sensordata:[],//传感器数组
       center: {
         lng: 116.404,
         lat: 39.915
@@ -123,35 +139,46 @@ export default {
       powers: [],
       save_loading: false,
       formValidate: {
-        eid: "",
-        username: "",
-        password: "",
-        passwordck: "",
-        bindcode: "",
-        role: [],
-        status: true
+        name: "",
+        sn: "",
+        describes: "",
+        treaty: "",
+        sensordata: [],
+      },
+      sensorvalidate:{
+        name: [
+            { required: true, message: "传感器名称不能为空", trigger: "blur" },
+            { validator: validateInput, trigger: "blur" },
+            { min: 2, max: 20, message: "长度在 2 到20个字符", trigger: "change" }
+          ],
       },
       ruleValidate: {
-        eid: [{ required: true, message: "EID分组不能为空", trigger: "blur" }],
+        sn: [{ required: true, message: "序列号不能为空", trigger: "blur" }],
 
-        username: [
-          { required: true, message: "用户名不能为空", trigger: "blur" },
+        name: [
+          { required: true, message: "设备名称不能为空", trigger: "blur" },
           { validator: validateInput, trigger: "blur" },
           { min: 2, max: 20, message: "长度在 2 到20个字符", trigger: "change" }
         ],
 
-        password: [
-          { validator: validatePass, required: true, trigger: "blur" },
-          { validator: validatePassword, trigger: "blur" }
+        stype: [
+            { required: true, message: '请选择设备类型', trigger: 'change' }
         ],
-
-        passwordck: [
-          { validator: validatePassCheck, required: true, trigger: "blur" }
-        ]
+        sensors: [
+            { required: true, type: 'array', min: 1, message: '最少有一个传感器', trigger: 'change' },
+            { type: 'array', max: 5, message: '最多有5个传感器', trigger: 'change' }
+        ],
       }
     };
   },
   methods: {
+    handleDelete(index){
+            // console.log(id)
+        this.formValidate.sensordata.splice(index,1);
+    },
+    handleAdd(){
+        this.formValidate.sensordata.push({name:'',skey:'',stype:'',sunit:''})
+    },
     handler ({BMap, map}) {
         console.log(BMap, map)
         // this.center.lng =113.822348      
