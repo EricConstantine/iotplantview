@@ -34,7 +34,7 @@
                         <span class='title'>设备名称:</span><span>{{devicedata.name}}</span>
                     </Col>
                     <Col span='12'>
-                        <span class='title'>设备描述:</span><span>{{devicedata.sn}}</span>
+                        <span class='title'>设备描述:</span><span>{{devicedata.describes}}</span>
                     </Col>
                 </Row>
                 <Row>

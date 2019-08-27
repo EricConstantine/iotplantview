@@ -37,7 +37,7 @@
               <Button @click="handleCancel" icon="ios-shuffle-strong" type="primary">清除</Button>
             </i-col>
           </Row>
-          <Row class="margin-top-10">
+          <Row style="margin-top:20px">
             <Table
               stripe
               ref="selection"
@@ -177,46 +177,46 @@ export default {
           sortable: "custom"
         },
 
-        {
-          title: "操作",
-          key: "action",
-          align: "center",
-          render: (h, params) => {
-            return h("div", [
-              h(
-                "Button",
-                {
-                  props: {
-                    type: "primary",
-                    size: "small"
-                  },
-                  style: {
-                    marginRight: "5px"
-                  },
-                  on: {
-                    click: () => {
-                      let self = this;
-                      this.$Modal.confirm({
-                        // loading:true,
-                        title: "重置密码确认",
-                        content:
-                          "<p>你要重置的用户为" +
-                          params.row.username +
-                          "，要继续重置操作吗？</p>",
-                        onOk: function() {
-                          // this.currentid = params.row.id;
-                          console.log(self);
-                          self.resetpwd(params.row.id);
-                        }
-                      });
-                    }
-                  }
-                },
-                "重置密码"
-              )
-            ]);
-          }
-        }
+        // {
+        //   title: "操作",
+        //   key: "action",
+        //   align: "center",
+        //   render: (h, params) => {
+        //     return h("div", [
+        //       h(
+        //         "Button",
+        //         {
+        //           props: {
+        //             type: "primary",
+        //             size: "small"
+        //           },
+        //           style: {
+        //             marginRight: "5px"
+        //           },
+        //           on: {
+        //             click: () => {
+        //               let self = this;
+        //               this.$Modal.confirm({
+        //                 // loading:true,
+        //                 title: "重置密码确认",
+        //                 content:
+        //                   "<p>你要重置的用户为" +
+        //                   params.row.username +
+        //                   "，要继续重置操作吗？</p>",
+        //                 onOk: function() {
+        //                   // this.currentid = params.row.id;
+        //                   console.log(self);
+        //                   self.resetpwd(params.row.id);
+        //                 }
+        //               });
+        //             }
+        //           }
+        //         },
+        //         "重置密码"
+        //       )
+        //     ]);
+        //   }
+        // }
       ],
       data: []
     };
@@ -337,7 +337,7 @@ export default {
       }
       let keywords = this.table.keywords;
       window.location.href =
-        "/netgate-server/user/expexcel?sort=" +
+        "/iotplant/device/expexcel?sort=" +
         sort +
         "&size=1000&keywords=" +
         keywords;
@@ -389,7 +389,7 @@ export default {
             }
             this.$axios
               .delete(
-                "/netgate-server/user/delete?usersids=" + usersids,
+                "/iotplant/device/delete?usersids=" + usersids,
                 {},
                 {
                   headers: {

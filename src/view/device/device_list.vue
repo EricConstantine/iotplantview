@@ -1,47 +1,50 @@
 <style scoped>
-    .demo-tabs-style1 > .ivu-tabs-card > .ivu-tabs-content {
-        height: 120px;
-    }
+.demo-tabs-style1 > .ivu-tabs-card > .ivu-tabs-content {
+  height: 120px;
+}
 
-    .demo-tabs-style1 > .ivu-tabs-card > .ivu-tabs-content > .ivu-tabs-tabpane {
-        background: #fff;
-        padding: 16px;
-    }
+.demo-tabs-style1 > .ivu-tabs-card > .ivu-tabs-content > .ivu-tabs-tabpane {
+  background: #fff;
+  padding: 16px;
+}
 
-    .demo-tabs-style1 > .ivu-tabs.ivu-tabs-card > .ivu-tabs-bar .ivu-tabs-tab {
-        border-color: transparent;
-    }
+.demo-tabs-style1 > .ivu-tabs.ivu-tabs-card > .ivu-tabs-bar .ivu-tabs-tab {
+  border-color: transparent;
+}
 
-    .demo-tabs-style1 > .ivu-tabs-card > .ivu-tabs-bar .ivu-tabs-tab-active {
-        border-color: #fff;
-    }
+.demo-tabs-style1 > .ivu-tabs-card > .ivu-tabs-bar .ivu-tabs-tab-active {
+  border-color: #fff;
+}
 
-    .tabpane {
-        overflow-x:hidden;overflow-y: visible;
-        margin-top:-16px;
-        border-left:solid #ddd 1px;
-        border-right:solid #ddd 1px;
-        border-bottom:solid #ddd 1px;
-        border-top:none;
-    }
-    .mainlist{
-        width:100%;overflow-x:hidden;overflow-y: visible
-    }
+.tabpane {
+  overflow-x: hidden;
+  overflow-y: visible;
+  margin-top: -16px;
+  border-left: solid #ddd 1px;
+  border-right: solid #ddd 1px;
+  border-bottom: solid #ddd 1px;
+  border-top: none;
+}
+.mainlist {
+  width: 100%;
+  overflow-x: hidden;
+  overflow-y: visible;
+}
 </style>
 <template>
-    <Row :gutter="5">
-      <Col span="4">
-        <Card style="padding:2px 5px 2px 5px;overflow-y:auto;overflow-x:auto;">
-          <Tree :data="gatewaydata" :render="renderContent" :style="treestyle"></Tree>
-        </Card>
-      </Col>
-      <Col span="20">
-        <div class="demo-tabs-style1" style="margin-bottom:0px;background-color:#F0F0F0;">
-          <Tabs type="card" @on-click="clicktabs">
-            <TabPane label="设备平台数据" class="tabpane" :style="panestyle">
-                <tab1 :devicedata="devicedata"  :sensordata="sensordata" @sendTabData="sendTabData"></tab1>
-            </TabPane>
-            <!-- <TabPane label="设备现场数据" class="tabpane" :style="panestyle">
+  <Row :gutter="5">
+    <Col span="4">
+      <Card style="padding:2px 5px 2px 5px;overflow-y:auto;overflow-x:auto;">
+        <Tree :data="gatewaydata" :render="renderContent" :style="treestyle"></Tree>
+      </Card>
+    </Col>
+    <Col span="20">
+      <div class="demo-tabs-style1" style="margin-bottom:0px;background-color:#F0F0F0;">
+        <Tabs type="card" @on-click="clicktabs">
+          <TabPane label="设备平台数据" class="tabpane" :style="panestyle">
+            <tab1 :devicedata="devicedata" :sensordata="sensordata" @sendTabData="sendTabData"></tab1>
+          </TabPane>
+          <!-- <TabPane label="设备现场数据" class="tabpane" :style="panestyle">
                 <tab2 :tab2treedata="tab2treedata" :sn="selectionsn"></tab2>
             </TabPane>
             <TabPane label="日志检索" class="tabpane" :style="panestyle">
@@ -49,13 +52,24 @@
             </TabPane>
             <TabPane label="授权管理" class="tabpane" :style="panestyle">
                   <tab10 :sn="selectionsn" @authensetkey="authensetkey" :empower="selectempower" :tab10authendata="tab10authendata" ></tab10>
-            </TabPane> -->
+          </TabPane>-->
         </Tabs>
       </div>
-     </Col>
+    </Col>
   </Row>
 </template>
 <script>
+let mqtt = require('mqtt');
+var client
+const options = {
+  port: 61614,
+  connectTimeout: 2000,
+  clientId: 'webgate'+Math.random(),
+  username: 'admin',
+  password: 'admin',
+  clean: true
+}
+client = mqtt.connect('mqtt://59.110.142.242', options)
 import Cookies from 'js-cookie'
 import tab1 from './tabcomponent/tab1'
 // import tab2 from './tabcomponent/tab2';
@@ -116,53 +130,39 @@ export default {
       },
       freshloading: false,
       tab1data: {},
-      pointdata: [],
-      pointdata0: [],
-      pointdata1: [],
-      pointdata2: [],
-      pointdata3: [],
-      pointdata4: [],
-      pointdata5: [],
-      pointdata6: [],
-      pointdata7: [],
-      pointdata8: [],
-      pointdata9: [],
-      tab2treedata: {},
-      tab6logdata: [],
-      tab10authendata: {},
       gatewaydata: [
-        {
-          title: '设备列表',
-          expand: true,
-          render: (h, { root, node, data }) => {
-            return h('span', {
-              style: {
-                display: 'inline-block',
-                width: '100%'
-              }
-            }, [
-              h('span', [
-                h('Icon', {
-                  props: {
-                    type: 'network',
-                    color: '#2d8cf0',
-                    size: '15'
-                  },
-                  style: {
-                    marginRight: '8px'
-                  }
-                }),
-                h('span', data.title)
-              ])
-
-            ])
-          },
-          children: []
-        }
+          {
+              title: '设备列表',
+              expand: true,
+              render: (h, { root, node, data }) => {
+                  return h('span', {
+                      style: {
+                          display: 'inline-block',
+                          width: '100%'
+                      }
+                  }, [
+                      h('span', [
+                          h('Icon', {
+                              props: {
+                                  type: 'happy-outline',
+                                  color: '#2d8cf0',
+                                  size: '15'                                
+                              },
+                              style: {
+                                  marginRight: '8px'
+                              }
+                          }),
+                          h('span', data.title)
+                      ]),
+                      
+                  ]);
+              },
+              children: []
+          }
       ],
       buttonProps: {
-        type: 'ghost',
-        size: 'small'
+          type: 'ghost',
+          size: 'small',
       },
       heartbeatinterval: null
     }
@@ -281,8 +281,6 @@ export default {
           for (let i = 0; i < response.data.content.length; i++) {
             let content = { expand: true }
             content.title = response.data.content[i].name + '-' + response.data.content[i].describes
-            content.color = '#bbbec4'
-            // content.buttontype = 'text';
             if (self.selectionsn == response.data.content[i].sn) {
               content.buttontype = 'primary'
             } else {
@@ -297,7 +295,7 @@ export default {
             content.treaty = response.data.content[i].treaty
             content.createtime = response.data.content[i].createtime
             content.userid = response.data.content[i].userid
-            content.color = 'bbbec4'
+            content.color = '#bbbec4'
             contents.push(content)
           }
           self.gatewaydata[0].children = contents
@@ -460,9 +458,92 @@ export default {
 
       var blob = new Blob(byteArrays, { type: contentType })
       return blob
+    },
+    mqttMSG () {
+        // mqtt连接
+        client.on('connect', (e) => {
+            console.log('连接成功:')
+            client.subscribe('netgate/#', { qos: 1 }, (error) => {
+            if (!error) {
+                console.log('订阅成功')
+            } else {
+                console.log('订阅失败')
+            }
+            })
+        })
+        // 接收消息处理
+        client.on('message', (topic, msg) => {
+            let self = this;
+            //console.log('收到来自', topic, '的消息', message.toString())
+            let arrtopic = topic.split("/");
+            let receivesn = arrtopic[1];
+            let message = JSON.parse(msg.toString());
+            console.log(message)
+            let message_obj = message.data;  
+            if(message.code == 'online'){
+                //在线控制，如果收到了消息就让其在线。
+                for(let j=0;j<self.gatewaydata[0].children.length;j++){
+                    if(receivesn==self.gatewaydata[0].children[j].sn){
+                        self.gatewaydata[0].children[j].color = '#19be6b';
+                    }
+                }
+            }else if(message.code == 'offline'){
+                //下线消息
+                for(let j=0;j<self.gatewaydata[0].children.length;j++){
+                    if(receivesn==self.gatewaydata[0].children[j].sn){
+                        self.gatewaydata[0].children[j].color = '#bbbec4';
+                    }
+                }
+            }
+            if(this.selectionsn != receivesn) return;
+            if(message.code == 'rts'){//测点数据
+                console.log("收到测点数据")
+                let type = message.type;
+                if(type==0) this.pointdata0 = message_obj;
+                else if(type==1) this.pointdata1 = message_obj;
+                else if(type==2) this.pointdata2 = message_obj;
+                else if(type==3) this.pointdata3 = message_obj;
+                else if(type==4) this.pointdata4 = message_obj;
+                else if(type==5) this.pointdata5 = message_obj;
+                else if(type==6) this.pointdata6 = message_obj;
+                else if(type==7) this.pointdata7 = message_obj;
+                else if(type==8) this.pointdata8 = message_obj;
+                else if(type==9) this.pointdata9 = message_obj;
+            }else if(message.code == 'webline'){//后台状态数据
+                this.initcontent(message_obj);
+            }else if(message.code == 'uploadok'){
+                console.log('收到了文件上传消息')
+                console.log(message_obj)
+                download(message_obj.msg)
+            }else if(message.code == 'gtdata'){//接收设备数据库数据
+                this.tab2treedata = message;
+            }else if(message.code == 'logInfo'){//日志数据
+                this.tab6logdata = message_obj;
+            }else if(message.code == 'warrantInfo'){//授权查询数据
+                this.tab10authendata = message_obj;
+            }else if(message.code == 'getConfigbin'){//设备维护
+                console.log('设备维护')
+                ownfile(message_obj);
+                if(this.exportfile){
+                    this.jsdownfile(message_obj);
+                    this.exportfile = false;
+                }
+            }else if(message.code == 'heartbeat'){//设备维护
+                console.log(message_obj)
+            }
+        })
+        // 断开发起重连
+        client.on('reconnect', (error) => {
+            console.log('正在重连:', error)
+        })
+        // 链接异常处理
+        client.on('error', (error) => {
+            console.log('连接失败:', error)
+        })
     }
   },
   mounted () {
+    this.mqttMSG();
     window.onresize = () => {
       return (() => {
         this.initHight()

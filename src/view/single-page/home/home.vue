@@ -1,5 +1,7 @@
 <template>
   <div>
+    <i class="ivu-icon ivu-icon-record" style="font-size: 12px;color: rgb(14, 52, 128);margin-right: 8px;"></i>
+    <i class="ivu-icon ivu-icon-record" style="font-size: 12px;color: rgb(206, 38, 168);margin-right: 8px;"></i>
     <button @click="test()">测速AX</button>
     <Row :gutter="20">
       <i-col :xs="12" :md="8" :lg="4" v-for="(infor, i) in inforCardData" :key="`infor-${i}`" style="height: 120px;padding-bottom: 10px;">

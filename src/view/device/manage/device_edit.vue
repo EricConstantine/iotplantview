@@ -15,7 +15,7 @@
     <Col span="24">
       <Card>
         <p slot="title">
-          <Icon type></Icon>用户信息编辑
+          <Icon type></Icon>设备信息编辑
         </p>
         <baidu-map class="bm-view" ak="8ZtLu08Kg2HaujZZTsf7DpW4sg4ac6Bm">
         </baidu-map>
@@ -34,12 +34,13 @@
           </FormItem>
           <FormItem label="传感器" prop="sensors">
             <Button type="success" icon="plus-round" @click="handleAdd()">增加</Button>
-            <Form ref="formsensor" :rules="sensorvalidate" >
-            <Row v-for="(item,index) in formValidate.sensordata" :key="index" style="margin-bottom:2px">
-              <FormItem label="设备名称" prop="name">
-                <Input v-model="item.name" placeholder="传感器名称..." style="width: 20%;float:left;margin-left:2%">
-                    <span slot="append"><Icon type="md-close" @click="handleDelete(index)" /></span>
-                </Input>
+            <Form ref="formsensor" style="margin-top:20px">
+            <Row v-for="(item,index) in formValidate.sensordata" :key="index" style="margin-bottom:10px">
+              <FormItem style="float:left"
+                    :prop="'sensordata.' + index + '.name'">
+                    <Input v-model="item.name" placeholder="传感器名称..." style="float:left;width:100%">
+                        <span slot="append"><Icon type="md-close" @click="handleDelete(index)" /></span>
+                    </Input>
               </FormItem>
               <Input v-model="item.skey" placeholder="传感器KEY..."  style="width: 20%;margin-left:2%" />
               <Select v-model="item.stype" style="width: 20%;margin-left:2%">
@@ -78,6 +79,7 @@
   </Row>
 </template>
 <script>
+import { setFlagsFromString } from 'v8';
 Vue.use(VueBaiduMap.default, {
   ak: '8ZtLu08Kg2HaujZZTsf7DpW4sg4ac6Bm'
 })
@@ -87,6 +89,7 @@ export default {
   name: "device-edit",
   data() {
     var validateInput = (rule, value, callback) => {
+      console.log(rule)
       console.log("校验了");
       if (!this.checkInput(value)) {
         callback(new Error("请不要输入特殊字符"));
@@ -94,40 +97,18 @@ export default {
         callback();
       }
     };
-    var validatePassword = (rule, value, callback) => {
-      var reg = /^(\w){6,20}$/; // 密码数字或字母
-      var regg = /^(?!([a-zA-Z]+|\d+)$)[a-zA-Z\d]{6,20}$/; // 密码必须包含数字或字母
-      if (!regg.test(value)) {
-        callback(new Error("密码必须包含数字和字母并且在6-20之间"));
-      } else {
-        callback(); // 有数字有字母 ";
-      }
-    };
-    const validatePass = (rule, value, callback) => {
-      if (value === "") {
-        callback(new Error("请输入密码"));
-      } else {
-        if (this.formValidate.passwordck !== "") {
-          // 对第二个密码框单独验证
-          this.$refs.formValidate.validateField("passwordck");
-        }
-        callback();
-      }
-    };
-    const validatePassCheck = (rule, value, callback) => {
-      console.log(rule);
-      console.log(value);
-      if (value === "") {
-        callback(new Error("请再次输入密码"));
-      } else if (value !== this.formValidate.password) {
-        callback(new Error("两次密码不一致"));
+    var validataSensor = (rule, value, callback) => {
+      console.log(rule)
+      console.log("校验了");
+      if (!this.checkInput(value)) {
+        callback(new Error("请不要输入特殊字符"));
       } else {
         callback();
       }
     };
     return {
+      lastid:'',
       sensortype:['温度','光照','数值','湿度'],
-      sensordata:[],//传感器数组
       center: {
         lng: 116.404,
         lat: 39.915
@@ -144,6 +125,7 @@ export default {
         describes: "",
         treaty: "",
         sensordata: [],
+        location
       },
       sensorvalidate:{
         name: [
@@ -164,10 +146,10 @@ export default {
         stype: [
             { required: true, message: '请选择设备类型', trigger: 'change' }
         ],
-        sensors: [
-            { required: true, type: 'array', min: 1, message: '最少有一个传感器', trigger: 'change' },
-            { type: 'array', max: 5, message: '最多有5个传感器', trigger: 'change' }
-        ],
+        // sensors: [
+        //     { required: true, type: 'array', min: 1, message: '最少有一个传感器', trigger: 'change' },
+        //     { type: 'array', max: 5, message: '最多有5个传感器', trigger: 'change' }
+        // ],
       }
     };
   },
@@ -191,21 +173,14 @@ export default {
         this.center.lng = e.point.lng      
         this.center.lat = e.point.lat    
     },
-    choserole(roles) {
-      let role = this.formValidate.role[1];
-      let rolearr = [];
-      rolearr.push(role);
-      this.formValidate.role = rolearr;
-    },
     handleInit() {
       let self = this;
       self.$Message.info("正在努力加载数据...");
-      let usersid = this.$route.query.id.toString();
-      if (usersid && usersid != "") {
-        console.log(222);
+      let id = this.lastid;
+      if (id && id != "") {
         this.$axios
           .get(
-            "/netgate-server/user/singledata?usersid=" + usersid,
+            "/iotplant/device/findById?id=" + id,
             {},
             {
               headers: {
@@ -214,109 +189,58 @@ export default {
             }
           )
           .then(function(response) {
-            console.log(response.data);
-            self.formValidate.eid = response.data.eid; // EID分组
-            self.formValidate.username = response.data.username; // 用户
-            self.formValidate.password = response.data.password; // 密码
-            self.formValidate.passwordck = response.data.passwordck; // 密码确认
-            if (
-              response.data.bindcode != null &&
-              response.data.bindcode != undefined
-            ) {
-              self.formValidate.bindcode = response.data.bindcode; // 绑定码,分割
-            }
-            let rolearr = [];
-            if (response.data.roles != "") rolearr.push(response.data.role);
-            self.formValidate.role = rolearr;
-            if (response.data.status == 0) self.formValidate.status = false;
-            else self.formValidate.status = true;
+            console.log(response.data.data)
+            let data = JSON.parse(response.data.data)
+            console.log(data.device)
+            self.formValidate = data.device;
+            self.formValidate.sensordata = data.sensors;
+            let locationarr = data.device.location.split(";");
+            self.center.lng = locationarr[0];
+            self.center.lat = locationarr[1];
+            self.zoom =  new Number(locationarr[2]);
             self.$Message.success("数据加载成功！");
           })
           .catch(function(response) {
             self.$Message.error("数据加载失败，请与管理员联系！");
             console.log(response);
           });
-      } else {
-        console.log("清空");
-        self.formValidate.eid = ""; // EID分组
-        self.formValidate.username = ""; // 用户
-        self.formValidate.password = ""; // 密码
-        self.formValidate.passwordck = ""; // 密码确认
-        self.formValidate.bindcode = ""; // 绑定码,分割
-        self.formValidate.role = []; // 权限id,分割
-        self.formValidate.status = true;
       }
-    },
-    getallroles() {
-      let self = this;
-      this.$axios
-        .get(
-          "/netgate-server/role/getallrole",
-          {},
-          {
-            headers: {
-              "Content-Type": "application/json;charset=utf-8"
-            }
-          }
-        )
-        .then(function(response) {
-          self.roles = response.data;
-        })
-        .catch(function(response) {
-          self.$Message.error("角色数据加载失败，请与管理员联系！");
-          console.log(response);
-        });
     },
     handleSubmit(name) {
-      if (
-        this.formValidate.role.length < 1 ||
-        this.formValidate.role[0] == "undefined"
-      ) {
-        this.$Message.warning("请选择用户角色!");
-        return false;
-      }
-      if (this.userid != "") {
-        this.formValidate.password = "a123456";
-        this.formValidate.passwordck = "a123456";
-      }
       let self = this;
       this.save_loading = true;
+      let sdata = this.formValidate.sensordata;
+      for(let i=0;i<sdata.length;i++){
+        if(sdata[i].name == ''){
+          self.$Message.error("传感器名称不能为空!");
+          return ;
+        }
+      }
       this.$refs[name].validate(valid => {
         if (valid) {
           console.log("提交了");
-          let status = 1; // 默认启用
-          let param = new FormData(); // 创建form对象
-          param.append("id", self.$route.query.id.toString()); // ID
-          param.append("eid", self.formValidate.eid); // EID分组
-          param.append("username", self.formValidate.username); // 用户
-          param.append("password", self.formValidate.password); // 密码
-          param.append("bindcode", self.formValidate.bindcode); // 绑定码,分割
-          param.append("role", self.formValidate.role[0]); // 权限id,分割
-          param.append("usertype", 3); // 用户类型普通用户
-          if (!self.formValidate.status) status = 0;
-          param.append("status", status); // 状态，是否禁用
-          self.$axios
-            .post("/netgate-server/user/save?", param, {
-              headers: {
-                "Content-Type": "multipart/form-data"
-              }
-            })
-            .then(function(response) {
-              if (response.data.ok) {
-                self.save_loading = false;
-                self.$router.push({
-                  name: "user-manage",
-                  query: { refresh: true }
+          self.formValidate.locationstr =  self.center.lng+";"+self.center.lat+";"+self.zoom;
+          self.$axios({
+              method:'post',
+              url:'/iotplant/device/saveDevice',
+              data: this.formValidate,
+              headers:{'Content-Type': 'application/json;charset=utf-8'}
+          }).then(res=>{
+              self.save_loading = false;
+               if (res.data.ok) {
+                  self.save_loading = false;
+                  self.$router.push({
+                    name: "device_manage",
+                    query: { refresh: true }
                 });
               } else {
-                self.$Message.error(response.data.msg);
+                self.$Message.error(res.data.msg);
                 self.save_loading = false;
               }
-            })
-            .catch(function(response) {
+          }).catch(function(response) {
               self.$Message.error("保存失败，请检查输入内容!");
               console.log(response);
-            });
+          });
         } else {
           self.save_loading = false;
           self.$Message.error("内容验证不通过，请检查输入内容!");
@@ -325,24 +249,19 @@ export default {
     },
     handleReset(name) {
       this.$refs[name].resetFields();
-      this.formValidate.role = ["4"];
     }
   },
   mounted() {
-    console.log(this.$route.query.id.toString());
-    // this.handleReset("formValidate");
-    // if (
-    //   this.$route.query.id.toString() != "" &&
-    //   this.$route.query.id.toString() != null
-    // ) {
-    //   let lastuserid = this.$route.query.id.toString();
-    //   this.userid = lastuserid;
-    //   this.handleInit();
-    // }
-
-    // this.getalleid();
-    // this.getallroles();
-    // this.getallpower();
+    console.log('初始化')
+    console.log(this.$route.query.id)
+    if(this.$route.query.id==null ||this.$route.query.id == undefined || this.$route.query.id == ''){
+      this.lastid = '';
+    }else{
+      console.log('进入编辑模式')
+      this.lastid = this.$route.query.id.toString();
+      console.log(this.lastid)
+      this.handleInit();
+    }
   },
   watch: {
     $route(to) {

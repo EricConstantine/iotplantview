@@ -17,7 +17,9 @@ import VOrgTree from 'v-org-tree'
 import 'v-org-tree/dist/v-org-tree.css'
 import axios from 'axios'
 import BaiduMap from 'vue-baidu-map'
+import commons from '@/libs/common.js' ;
 
+Vue.use(commons);
 Vue.use(BaiduMap, {
   // ak 是在百度地图开发者平台申请的密钥 详见 http://lbsyun.baidu.com/apiconsole/key */
   ak: '8ZtLu08Kg2HaujZZTsf7DpW4sg4ac6Bm'
