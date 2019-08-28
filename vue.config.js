@@ -13,7 +13,7 @@ const resolve = dir => {
 // 需要将它改为'/my-app/'
 // iview-admin线上演示打包路径： https://file.iviewui.com/admin-dist/
 const BASE_URL = process.env.NODE_ENV === 'production'
-  ? 'http://localhost:8001/netgate/'
+  ? '/'
   : '/'
 
 module.exports = {
@@ -42,11 +42,12 @@ module.exports = {
   // }
   devServer: {
     proxy: {
-        '/iotplant': {
-            target: 'http://localhost:8001/', //后台服务器的ip地址
-            // pathRewrite: { '^/api': '/' },
-            changeOrigin: true
-        }
+      '/iotplant': {
+        // target: 'http://localhost:8001/', //后台服务器的ip地址
+        target: 'http://59.110.142.242:8001/', // 后台服务器的ip地址
+        // pathRewrite: { '^/api': '/' },
+        changeOrigin: true
+      }
     }
   }
 }

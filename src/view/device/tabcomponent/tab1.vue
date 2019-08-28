@@ -54,7 +54,7 @@
                     </Col>
                 </Row>
                 <Row style="margin-top:20px">
-                    <Table border :columns="sensorcolumn" :data="sensordata">
+                    <Table border :columns="sensorcolumn" :data="sendata">
                         <!-- <template slot-scope="{ row }" slot="name">
                             <strong>传感器数据</strong>
                         </template> -->
@@ -70,15 +70,15 @@
         <div>
             <Drawer title="数据下置" :closable="false" v-model="openset" id="setdiv">
                  <p style="margin-top:50%">
-                    <Input v-model="dsttitle">
+                    <Input v-model="dsdata.key">
                         <span slot="prepend">KEY</span>
                     </Input>
                 </p>
                  <p>
-                    <Input v-model="dsvalue" type="textarea" :rows="4" placeholder="Enter something..." />
+                    <Input v-model="dsdata.value" type="textarea" :rows="4" placeholder="Enter something..." />
                 </p>
                 <p>
-                    <Button type="success" long>SUBMIT</Button>
+                    <Button type="success" long @click="sendData()">SUBMIT</Button>
                 </p>
             </Drawer>
         </div>
@@ -98,13 +98,19 @@ export default {
     },
     sensordata: {
       type: Array
+    },
+    mqttdata: {
+      type: Object
     }
   },
   data () {
     return {
+      sendata:[],
       openset: false,
-      dsttitle: '',
-      dsvalue: '',
+      dsdata:{
+        key: '',
+        value: '',
+      },
       sensorcolumn: [
         {
           title: '名称',
@@ -127,22 +133,12 @@ export default {
           key: 'sunit'
         },
         {
-          title: 'Action',
+          title: '操作',
           slot: 'action',
           width: 250,
           align: 'center'
         }
       ],
-
-      downurl: '', // 下载的地址
-      contentfile: null, // 模拟网关发送文件
-      userfile: null, // 用户上传的本地文件
-      ipname: '', // 名称
-      ipaipd: '', // aipd
-      ipdes: '', // 描述
-      currentpage: 1,
-      loading: false,
-      listdata: [],
       pagerData: {
         data: [],
         page: {
@@ -158,70 +154,17 @@ export default {
           totalCount: 80
         }
       },
-      mypoin: [],
-      basedata: [],
-      arraydata: [],
-      data: [],
-      cureid: '',
-      eidlist: [],
-      tabpushweb: 0, // Vue报错  少了这个的定义  我加一下
-      modelroot: false, // Root指派弹窗
-      modelset: false, // 配置
-      modelwh: false, // 更新维护
-      isstorage: 0, // 是否存储到默认引擎 0否1是
-      storagelist: [
-        { 'name': 'None', 'value': 0 },
-        { 'name': '默认存储引擎', 'value': 1 }
-      ],
-      table: {
-        loading: false,
-        selection: [],
-        keywords: ''
-      },
-      allcolumn: [
-        {
-          key: 'name',
-          title: '名称',
-          ellipsis: true
-        },
-
-        {
-          key: 'desc',
-          title: '描述',
-          ellipsis: true
-        },
-
-        {
-          key: 'type',
-          title: '类型',
-          ellipsis: true
-        },
-
-        {
-          key: 'realvalue',
-          title: '实时值',
-          ellipsis: true
-        },
-
-        {
-          key: 'time',
-          title: '时间戳',
-          render: (h, params) => {
-            let time = params.row.time
-            if (time < 10000000000) time = time * 1000
-            return h('Font', moment(time).format('YYYY-MM-DD HH:mm:ss'))
-          },
-          ellipsis: true
-        }
-      ]
-
     }
   },
   methods: {
     dataset (data) {
       this.openset = true
-      this.dsttitle = data.skey
+      this.dsdata.key = data.skey
       console.log(data)
+    },
+    sendData(){
+      console.log(JSON.stringify(this.dsdata));
+      this.$emit('sendTabData', JSON.stringify(this.dsdata));
     }
   },
   mounted () {
@@ -233,17 +176,32 @@ export default {
     // 监听双向绑定数据变化  调用handleOn方法  存入localStorage 做到双向绑定
     sensordata: {
       handler: function (val, oldVal) {
-        console.log('子页面监听到了')
+        console.log('监听到了sen数据')
         console.log(val)
-        this.sensordata = val
+        this.sendata = val
       },
       deep: true
     },
     devicedata: {
       handler: function (val, oldVal) {
-        console.log('子页面监听到了')
         console.log(val)
         this.devicedata = val
+      },
+      deep: true
+    },
+     mqttdata: {
+      handler: function (val, oldVal) {
+        console.log('子页面监听到了')
+        console.log(val)
+        console.log('---')
+        let sen = this.sendata;
+        console.log(sen)
+        for(let i=0;i<sen.length;i++){
+          if (sen[i].skey == val.key){
+            console.log('zhaodaole')
+            this.sendata[i].svalue=val.value;
+          }
+        }
       },
       deep: true
     }

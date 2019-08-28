@@ -42,7 +42,7 @@
       <div class="demo-tabs-style1" style="margin-bottom:0px;background-color:#F0F0F0;">
         <Tabs type="card" @on-click="clicktabs">
           <TabPane label="设备平台数据" class="tabpane" :style="panestyle">
-            <tab1 :devicedata="devicedata" :sensordata="sensordata" @sendTabData="sendTabData"></tab1>
+            <tab1 :devicedata="devicedata" :sensordata="sensordata" :mqttdata="mqttdata" @sendTabData="sendTabData"></tab1>
           </TabPane>
           <!-- <TabPane label="设备现场数据" class="tabpane" :style="panestyle">
                 <tab2 :tab2treedata="tab2treedata" :sn="selectionsn"></tab2>
@@ -108,6 +108,7 @@ export default {
   },
   data () {
     return {
+      mqttdata: {},
       sensordata: [], // 当前选中的设备的传感器信息
       devicedata: {}, // 当前设备的信息
       exportfile: false, // 是否允许导出文件
@@ -181,6 +182,8 @@ export default {
     authensetkey (key) { // 授权管理在线设置
     },
     sendTabData (data) {
+       console.log('父组件收到了'+data)
+       client.publish("webgate/"+this.selectionsn, data)
     },
     exportNet () {
       console.log('父页面的关闭方法')
@@ -193,52 +196,52 @@ export default {
       console.log(sn)
     },
     renderContent (h, { root, node, data }) {
-      return h('span', {
-        style: {
-          display: 'inline-block',
-          width: '100%'
-        }
-      }, [
-        h('span', [
-          h('Icon', {
-            props: {
-              type: 'record',
-              size: '12',
-              color: data.color
-            },
+        return h('span', {
             style: {
-              marginRight: '8px'
+                display: 'inline-block',
+                width: '100%'
             }
-          }),
-          h('Button', {
-            props: Object.assign({}, this.buttonProps, {
-              type: data.buttontype,
-              inner: data.title
-            }),
-            style: {
-              margin: '-4px 0px 0px 0px'
-            },
-            on: {
-              click: () => {
-                console.log(data)
-                this.handleTreeClick(data)
-                // 初始化树节点的选中效果
-                this.selectionsn = data.sn// 当前选中的sn
-                this.selectempower = data.empower
-                for (let i = 0; i < this.gatewaydata[0].children.length; i++) {
-                  let thissn = this.gatewaydata[0].children[i].sn
-                  this.gatewaydata[0].children[i].buttontype = 'text'
-                  if (data.sn == thissn) this.gatewaydata[0].children[i].buttontype = 'primary'
-                }
-              },
-              hover: () => {
-                // console.log(11)
-              }
-            }
-          }, data.title)
-          // h('span', data.title)
-        ])
-      ])
+        }, [
+            h('span', [
+                h('icon', {
+                    props: {
+                        type: 'md-cube',
+                        size: '12',
+                        color: data.color
+                    },
+                    style: {
+                        marginRight: '5px'
+                    }
+                }),
+                h('Button', {
+                    props: Object.assign({}, this.buttonProps, {
+                        type: data.buttontype,
+                        inner: data.title
+                    }),
+                    style: {
+                        margin: '-4px 0px 0px 0px'
+                    },
+                    on: {
+                        click: () => { 
+                            console.log('wwwwwwwwwwwwwwwwww')
+                            console.log(data) 
+                            this.handleTreeClick(data)
+                            //初始化树节点的选中效果
+                            this.selectionsn = data.sn;//当前选中的sn
+                            this.selectempower = data.empower;
+                            for(let i=0;i<this.gatewaydata[0].children.length;i++){
+                                let thissn = this.gatewaydata[0].children[i].sn;
+                                this.gatewaydata[0].children[i].buttontype = 'text';
+                                if(data.sn == thissn) this.gatewaydata[0].children[i].buttontype = 'primary';
+                            }
+                        },
+                        hover: () => { 
+                            //console.log(11)
+                        }
+                    }
+                }, data.title)
+            ])
+        ]);
     },
     handleTreeClick (data) {
       // this.pointdata = JSON.parse(pointmsg);
@@ -463,7 +466,7 @@ export default {
         // mqtt连接
         client.on('connect', (e) => {
             console.log('连接成功:')
-            client.subscribe('netgate/#', { qos: 1 }, (error) => {
+            client.subscribe('iotpalnt/#', { qos: 1 }, (error) => {
             if (!error) {
                 console.log('订阅成功')
             } else {
@@ -474,20 +477,20 @@ export default {
         // 接收消息处理
         client.on('message', (topic, msg) => {
             let self = this;
-            //console.log('收到来自', topic, '的消息', message.toString())
+            console.log('收到来自', topic, '的消息', msg.toString())
             let arrtopic = topic.split("/");
             let receivesn = arrtopic[1];
             let message = JSON.parse(msg.toString());
+            console.log(999999999)
             console.log(message)
-            let message_obj = message.data;  
-            if(message.code == 'online'){
-                //在线控制，如果收到了消息就让其在线。
-                for(let j=0;j<self.gatewaydata[0].children.length;j++){
-                    if(receivesn==self.gatewaydata[0].children[j].sn){
-                        self.gatewaydata[0].children[j].color = '#19be6b';
-                    }
+            let message_obj = message.data;
+            
+            for(let j=0;j<self.gatewaydata[0].children.length;j++){
+                if(receivesn==self.gatewaydata[0].children[j].sn){
+                    self.gatewaydata[0].children[j].color = '#19be6b';
                 }
-            }else if(message.code == 'offline'){
+            }
+            if(message.key == 'offline'){
                 //下线消息
                 for(let j=0;j<self.gatewaydata[0].children.length;j++){
                     if(receivesn==self.gatewaydata[0].children[j].sn){
@@ -496,41 +499,9 @@ export default {
                 }
             }
             if(this.selectionsn != receivesn) return;
-            if(message.code == 'rts'){//测点数据
-                console.log("收到测点数据")
-                let type = message.type;
-                if(type==0) this.pointdata0 = message_obj;
-                else if(type==1) this.pointdata1 = message_obj;
-                else if(type==2) this.pointdata2 = message_obj;
-                else if(type==3) this.pointdata3 = message_obj;
-                else if(type==4) this.pointdata4 = message_obj;
-                else if(type==5) this.pointdata5 = message_obj;
-                else if(type==6) this.pointdata6 = message_obj;
-                else if(type==7) this.pointdata7 = message_obj;
-                else if(type==8) this.pointdata8 = message_obj;
-                else if(type==9) this.pointdata9 = message_obj;
-            }else if(message.code == 'webline'){//后台状态数据
-                this.initcontent(message_obj);
-            }else if(message.code == 'uploadok'){
-                console.log('收到了文件上传消息')
-                console.log(message_obj)
-                download(message_obj.msg)
-            }else if(message.code == 'gtdata'){//接收设备数据库数据
-                this.tab2treedata = message;
-            }else if(message.code == 'logInfo'){//日志数据
-                this.tab6logdata = message_obj;
-            }else if(message.code == 'warrantInfo'){//授权查询数据
-                this.tab10authendata = message_obj;
-            }else if(message.code == 'getConfigbin'){//设备维护
-                console.log('设备维护')
-                ownfile(message_obj);
-                if(this.exportfile){
-                    this.jsdownfile(message_obj);
-                    this.exportfile = false;
-                }
-            }else if(message.code == 'heartbeat'){//设备维护
-                console.log(message_obj)
-            }
+            //否则把数据传递给子页面
+            this.mqttdata = message;
+            
         })
         // 断开发起重连
         client.on('reconnect', (error) => {
@@ -556,6 +527,7 @@ export default {
   },
   destroyed: function () {
 　　　　	 // 页面销毁时关闭长连接
+    // client.end()
   }
 }
 </script>
