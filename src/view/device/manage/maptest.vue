@@ -28,6 +28,7 @@
 </template>
 
 <script>
+import {deviceshow,deviceadd} from '@/api/device'
 import BaiduMap from 'vue-baidu-map/components/map/Map.vue'
 import {BmlMarkerClusterer} from 'vue-baidu-map'
 export default {
@@ -59,6 +60,10 @@ export default {
             this.center.lat = e.point.lat    
         }
 
+  },  
+  mounted() {
+    console.log('初始化')
+    console.log(deviceadd)
   }
 }
 </script>

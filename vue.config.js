@@ -43,9 +43,9 @@ module.exports = {
   devServer: {
     proxy: {
       '/iotplant': {
-        // target: 'http://localhost:8001/', //后台服务器的ip地址
-        target: 'http://59.110.142.242:8001/', // 后台服务器的ip地址
-        // pathRewrite: { '^/api': '/' },
+        target: 'http://localhost:8001/', //后台服务器的ip地址
+        // target: 'http://59.110.142.242:8001/', // 后台服务器的ip地址
+        pathRewrite: { '^/iotplant':'/iotplant'},
         changeOrigin: true
       }
     }

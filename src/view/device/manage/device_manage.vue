@@ -84,6 +84,7 @@
 </template>
 
 <script>
+import {devicemanage ,devicedelete } from '@/api/device'
 import Cookies from "js-cookie";
 import expandRow from "./expandRow.vue";
 export default {
@@ -240,38 +241,21 @@ export default {
       }
       let keywords = this.table.keywords;
       this.table.loading = true; // loading效果
-      this.$axios
-        .get(
-          "/iotplant/device/mngpagedata?page=" +
-            current +
-            "&size=" +
-            pagesize +
-            "&sort=" +
-            sort +
-            "&keywords=" +
-            keywords,
-          {},
-          {
-            headers: {
-              "Content-Type": "application/json;charset=utf-8"
-            }
-          }
-        )
-        .then(function(response) {
-          console.log(response);
-          self.table.loading = false; // 取消loading效果
-          if (response.data.totalElements > 0) {
-            self.page.total = response.data.totalElements;
-            self.data = response.data.content;
-          } else {
-            self.page.total = 0;
-            self.data = [];
-          }
-          self.table.selection = [];
-        })
-        .catch(function(response) {
-          self.$util.logout(self, response);
-        });
+      devicemanage(current,pagesize,sort,keywords).then(function(response) {
+        console.log(response);
+        self.table.loading = false; // 取消loading效果
+        if (response.data.totalElements > 0) {
+          self.page.total = response.data.totalElements;
+          self.data = response.data.content;
+        } else {
+          self.page.total = 0;
+          self.data = [];
+        }
+        self.table.selection = [];
+      })
+      .catch(function(response) {
+        self.$util.logout(self, response);
+      });
     },
     handleCancel() {
       this.table.keywords = "";
@@ -387,25 +371,15 @@ export default {
               usersids += flag + selection[i].id;
               flag = ",";
             }
-            this.$axios
-              .delete(
-                "/iotplant/device/delete?usersids=" + usersids,
-                {},
-                {
-                  headers: {
-                    "Content-Type": "application/json;charset=utf-8"
-                  }
-                }
-              )
-              .then(function(response) {
-                modal.remove();
-                self.$Message.warning("删除成功!");
-                self.table.selection = [];
-                self.handleSearch();
-              })
-              .catch(function(response) {
-                console.log(response);
-              });
+            devicedelete(usersids).then(function(response) {
+              modal.remove();
+              self.$Message.success("删除成功!");
+              self.table.selection = [];
+              self.handleSearch();
+            })
+            .catch(function(response) {
+              console.log(response);
+            });
           }
         });
       }

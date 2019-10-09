@@ -63,12 +63,6 @@
                 </baidu-map>
             </div>
           </FormItem>
-          <!-- <FormItem label="状态" prop="status">
-            <i-switch size="large" v-model="formValidate.status">
-              <span slot="open">启用</span>
-              <span slot="close">禁用</span>
-            </i-switch>
-          </FormItem> -->
           <FormItem>
             <Button type="primary" @click="handleSubmit('formValidate')" :loading="save_loading">保存</Button>
             <Button type="primary" @click="handleReset('formValidate')" style="margin-left: 8px">重置</Button>
@@ -79,12 +73,12 @@
   </Row>
 </template>
 <script>
-import { setFlagsFromString } from 'v8';
-Vue.use(VueBaiduMap.default, {
-  ak: '8ZtLu08Kg2HaujZZTsf7DpW4sg4ac6Bm'
-})
-</script>
-<script>
+// import {devicemanage ,devicedelete } from '@/api/device'
+import {deviceshow,deviceadd} from '@/api/device'
+// import { setFlagsFromString } from 'v8';
+// Vue.use(VueBaiduMap.default, {
+//   ak: '8ZtLu08Kg2HaujZZTsf7DpW4sg4ac6Bm'
+// })
 export default {
   name: "device-edit",
   data() {
@@ -178,32 +172,50 @@ export default {
       self.$Message.info("正在努力加载数据...");
       let id = this.lastid;
       if (id && id != "") {
-        this.$axios
-          .get(
-            "/iotplant/device/findById?id=" + id,
-            {},
-            {
-              headers: {
-                "Content-Type": "application/json;charset=utf-8"
-              }
-            }
-          )
-          .then(function(response) {
-            console.log(response.data.data)
-            let data = JSON.parse(response.data.data)
-            console.log(data.device)
-            self.formValidate = data.device;
-            self.formValidate.sensordata = data.sensors;
-            let locationarr = data.device.location.split(";");
-            self.center.lng = locationarr[0];
-            self.center.lat = locationarr[1];
-            self.zoom =  new Number(locationarr[2]);
-            self.$Message.success("数据加载成功！");
-          })
-          .catch(function(response) {
-            self.$Message.error("数据加载失败，请与管理员联系！");
-            console.log(response);
-          });
+        console.log('--------------')
+        // console.log(devicemanage)
+        deviceshow(id).then(function(response) {
+          console.log(response.data.data)
+          let data = JSON.parse(response.data.data)
+          console.log(data.device)
+          self.formValidate = data.device;
+          self.formValidate.sensordata = data.sensors;
+          let locationarr = data.device.location.split(";");
+          self.center.lng = locationarr[0];
+          self.center.lat = locationarr[1];
+          self.zoom =  new Number(locationarr[2]);
+          self.$Message.success("数据加载成功！");
+        })
+        .catch(function(response) {
+          self.$Message.error("数据加载失败，请与管理员联系！");
+          console.log(response);
+        });
+        // this.$axios
+        //   .get(
+        //     "/iotplant/device/findById?id=" + id,
+        //     {},
+        //     {
+        //       headers: {
+        //         "Content-Type": "application/json;charset=utf-8"
+        //       }
+        //     }
+        //   )
+        //   .then(function(response) {
+        //     console.log(response.data.data)
+        //     let data = JSON.parse(response.data.data)
+        //     console.log(data.device)
+        //     self.formValidate = data.device;
+        //     self.formValidate.sensordata = data.sensors;
+        //     let locationarr = data.device.location.split(";");
+        //     self.center.lng = locationarr[0];
+        //     self.center.lat = locationarr[1];
+        //     self.zoom =  new Number(locationarr[2]);
+        //     self.$Message.success("数据加载成功！");
+        //   })
+        //   .catch(function(response) {
+        //     self.$Message.error("数据加载失败，请与管理员联系！");
+        //     console.log(response);
+        //   });
       }
     },
     handleSubmit(name) {
@@ -220,19 +232,17 @@ export default {
         if (valid) {
           console.log("提交了");
           self.formValidate.locationstr =  self.center.lng+";"+self.center.lat+";"+self.zoom;
-          self.$axios({
-              method:'post',
-              url:'/iotplant/device/saveDevice',
-              data: this.formValidate,
-              headers:{'Content-Type': 'application/json;charset=utf-8'}
-          }).then(res=>{
-              self.save_loading = false;
-               if (res.data.ok) {
+          var datas = this.formValidate;
+          console.log('传入的参数：')
+          console.log(datas)
+          deviceadd(datas).then(res=>{
+            self.save_loading = false;
+              if (res.data.ok) {
                   self.save_loading = false;
                   self.$router.push({
-                    name: "device_manage",
-                    query: { refresh: true }
-                });
+                  name: "device_manage",
+                  query: { refresh: true }
+              });
               } else {
                 self.$Message.error(res.data.msg);
                 self.save_loading = false;
@@ -241,6 +251,28 @@ export default {
               self.$Message.error("保存失败，请检查输入内容!");
               console.log(response);
           });
+
+          // self.$axios({
+          //     method:'post',
+          //     url:'/iotplant/device/saveDevice',
+          //     data: this.formValidate,
+          //     headers:{'Content-Type': 'application/json;charset=utf-8'}
+          // }).then(res=>{
+          //     self.save_loading = false;
+          //      if (res.data.ok) {
+          //         self.save_loading = false;
+          //         self.$router.push({
+          //           name: "device_manage",
+          //           query: { refresh: true }
+          //       });
+          //     } else {
+          //       self.$Message.error(res.data.msg);
+          //       self.save_loading = false;
+          //     }
+          // }).catch(function(response) {
+          //     self.$Message.error("保存失败，请检查输入内容!");
+          //     console.log(response);
+          // });
         } else {
           self.save_loading = false;
           self.$Message.error("内容验证不通过，请检查输入内容!");
@@ -254,6 +286,7 @@ export default {
   mounted() {
     console.log('初始化')
     console.log(this.$route.query.id)
+    console.log(deviceadd)
     if(this.$route.query.id==null ||this.$route.query.id == undefined || this.$route.query.id == ''){
       this.lastid = '';
     }else{

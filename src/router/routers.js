@@ -114,16 +114,53 @@ export default [
         },
         component: () => import('@/view/device/manage/device_edit.vue')
       },
-      // {
-      //   path: 'maptest',
-      //   name: 'maptest',
-      //   meta: {
-      //     icon: 'logo-octocat',
-      //     title: '地图测试'
-      //   },
-      //   component: () => import('@/view/device/manage/maptest.vue')
-      // }
+      {
+        path: 'maptest',
+        name: 'maptest',
+        meta: {
+          icon: 'logo-octocat',
+          title: '地图测试'
+        },
+        component: () => import('@/view/device/manage/maptest.vue')
+      }
     ]
+  },
+  {
+    path: '/product',
+    name: 'product',
+    component: Main,
+    meta: {
+      icon: 'md-planet',
+      title: '组件'
+    },
+    children: [
+      {
+        path: 'product_list',
+        name: 'product_list',
+        meta: {
+          icon: 'ios-paper',
+          title: '设备列表'
+        },
+        component: () => import('@/view/product/product-manage.vue')
+      },
+      {
+        path: 'product_manage',
+        name: 'product_manage',
+        meta: {
+          icon: 'logo-reddit',
+          title: '设备管理'
+        },
+        component: () => import('@/view/product/product-manage.vue')
+      },
+      {
+        path: 'product_edit',
+        name: 'product_edit',
+        meta: {
+          icon: 'logo-octocat',
+          title: '设备新增'
+        },
+        component: () => import('@/view/product/product-edit.vue')
+      }]
   },
   {
     path: '/message',

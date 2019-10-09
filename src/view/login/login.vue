@@ -65,17 +65,27 @@ export default {
       'getUserInfo'
     ]),
     handleSubmit ({ userName, password }) {
-      let self = this;
-      self.form.tip = '<font color="green">正在努力登陆中......</font>'; 
-       if(password == 'admin612'){
-        self.$store.commit('clearAllTags');//清空历史标签
-        this.$router.push({
-          name: this.$config.homeName
-        })
-      }else{
-        self.form.tip = '<font color="red">用户名或密码错误</font>';
-        self.$router.push('/login');
-      }
+      this.$router.push({
+                name: this.$config.homeName
+              })
+      //  this.handleLogin({ userName, password }).then(res => {
+      //       this.getUserInfo().then(res => {
+      //         this.$router.push({
+      //           name: this.$config.homeName
+      //         })
+      //       })
+      //     })
+      // let self = this;
+      // self.form.tip = '<font color="green">正在努力登陆中......</font>'; 
+      //  if(password == 'admin612'){
+      //   self.$store.commit('clearAllTags');//清空历史标签
+      //   this.$router.push({
+      //     name: this.$config.homeName
+      //   })
+      // }else{
+      //   self.form.tip = '<font color="red">用户名或密码错误</font>';
+      //   self.$router.push('/login');
+      // }
 
 
       // this.handleLogin({ userName, password }).then(res => {

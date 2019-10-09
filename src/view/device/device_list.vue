@@ -59,6 +59,7 @@
   </Row>
 </template>
 <script>
+import {getsensors,initTree} from '@/api/device'
 let mqtt = require('mqtt');
 var client
 const options = {
@@ -252,32 +253,39 @@ export default {
       let self = this
       let param = new FormData() // 创建form对象
       param.append('pid', data.id)// ID
-      self.$axios.post('/iotplant/sensor/getsensors', param, {
-        headers: {
-          'Content-Type': 'application/json;charset=utf-8'
-        }
-      }).then(function (response) {
-        console.log('-----')
-        console.log(typeof (response.data.data))
-        console.log(response.data.data)
-        console.log(response.data.data[0])
-        self.sensordata = response.data.data
-        console.log(7777777777)
-        console.log(self.sensordata)
+      getsensors(data.id).then(response => {
+        console.log("接口返回")
         console.log(response)
-      }).catch(function (response) {
-        self.$Message.error('获取传感器数据失败')
+          self.sensordata = response.data.data
+      }).catch((response) => {
         console.log(response)
       })
+
+      // self.$axios.post('/iotplant/sensor/getsensors', param, {
+      //   headers: {
+      //     'Content-Type': 'application/json;charset=utf-8'
+      //   }
+      // }).then(function (response) {
+      //   console.log('-----')
+      //   console.log(typeof (response.data.data))
+      //   console.log(response.data.data)
+      //   console.log(response.data.data[0])
+      //   self.sensordata = response.data.data
+      //   console.log(7777777777)
+      //   console.log(self.sensordata)
+      //   console.log(response)
+      // }).catch(function (response) {
+      //   self.$Message.error('获取传感器数据失败')
+      //   console.log(response)
+      // })
     },
     initcontent (message_obj) {
       // 页面刚进入时开启长连接
       let self = this
       self.table.loading = true
       console.log(this.$axios)
-      this.$axios.get('/iotplant/device/pagedata?page=0&size=10000&sort=name,asc')
-        .then(function (response) {
-          self.table.loading = false// 取消loading效果
+        initTree().then(response => {
+        self.table.loading = false// 取消loading效果
           console.log('初始化设备树')
           console.log(response)
           let contents = []
@@ -308,92 +316,56 @@ export default {
             self.handleTreeClick(self.gatewaydata[0].children[0])
             self.selectionsn = self.gatewaydata[0].children[0].sn
           }
-          //  for(let j=0;j<self.gatewaydata[0].children.length;j++){
-          //          self.gatewaydata[0].children[j].color = '#19be6b';
-          // }
-          // console.log(contents)
-          //     //有值代表需要更新在线状态  没有值代表第一次进来需要初始化WS连接
-          //     if(message_obj) {
-          //         for(let j=0;j<self.gatewaydata[0].children.length;j++){
-          //             let isonline = false;
-          //             for(let i=0;i<message_obj.length;i++){
-          //                 if(self.gatewaydata[0].children[j].sn == message_obj[i].sn){
-          //                     isonline = true;
-          //                 }
-          //             }
-          //             if(isonline){
-          //                 self.gatewaydata[0].children[j].color = '#19be6b';
-          //             }else{
-          //                 self.gatewaydata[0].children[j].color = '#bbbec4';
-          //             }
-          //         }
         }).catch((response) => {
           console.log(response)
         })
 
-      // let self = this;
-      // this.$axios.get("/iotplant/device/pagedata?page=0&size=10000&sort=name,asc&keywords="+'11', {}, {
-      //     headers: {
-      //         "Content-Type":"application/json;charset=utf-8"
-      //     },
-      // }).then(function(response) {
-      //     self.table.loading = false;//取消loading效果
-      //     console.log("开始初始化网关树结构")
-      //     console.log(response.data)
-      //     let contents = [];
-      //     for(let i=0;i<response.data.content.length;i++){
-      //         let content = {expand: true};
-      //         content.title = response.data.content[i].name+'-'+response.data.content[i].description;
-      //         content.color = '#bbbec4';
-      //         // content.buttontype = 'text';
-      //         if(self.selectionsn == response.data.content[i].sn){
-      //              content.buttontype = 'primary';
-      //         }else{
-      //             content.buttontype = 'text'
-      //         }
 
-      //         if(i == 0) content.selected = true;
-      //         content.id = response.data.content[i].id;
-      //         content.name = response.data.content[i].name;
-      //         content.eid = response.data.content[i].eid;
-      //         content.sn = response.data.content[i].sn;
-      //         content.bindcode = response.data.content[i].bindcode;
-      //         content.online = response.data.content[i].online;
-      //         content.description = response.data.content[i].description;
-      //         content.basemsg = response.data.content[i].basemsg;
-      //         // content.pointmsg = response.data.content[i].pointmsg;
-      //         content.pushweb = response.data.content[i].pushweb;
-      //         content.storagedb = response.data.content[i].storagedb;
-      //         content.aipd = response.data.content[i].aipd;
-      //         content.empower = response.data.content[i].empower;
-      //         contents.push(content);
+
+
+
+
+
+
+      // this.$axios.get('/iotplant/device/pagedata?page=0&size=10000&sort=name,asc')
+      //   .then(function (response) {
+      //     self.table.loading = false// 取消loading效果
+      //     console.log('初始化设备树')
+      //     console.log(response)
+      //     let contents = []
+      //     for (let i = 0; i < response.data.content.length; i++) {
+      //       let content = { expand: true }
+      //       content.title = response.data.content[i].name + '-' + response.data.content[i].describes
+      //       if (self.selectionsn == response.data.content[i].sn) {
+      //         content.buttontype = 'primary'
+      //       } else {
+      //         content.buttontype = 'text'
+      //       }
+      //       if (i == 0) content.selected = true
+      //       content.id = response.data.content[i].id
+      //       content.name = response.data.content[i].name
+      //       content.sn = response.data.content[i].sn
+      //       content.describes = response.data.content[i].describes
+      //       content.location = response.data.content[i].location
+      //       content.treaty = response.data.content[i].treaty
+      //       content.createtime = response.data.content[i].createtime
+      //       content.userid = response.data.content[i].userid
+      //       content.color = '#bbbec4'
+      //       contents.push(content)
       //     }
-      //     self.gatewaydata[0].children = contents;
-      //     if(self.selectionsn == ''){
-      //         self.gatewaydata[0].children[0].buttontype = 'primary';
-      //         self.handleTreeClick(self.gatewaydata[0].children[0]);
-      //         self.selectionsn = self.gatewaydata[0].children[0].sn;
+      //     self.gatewaydata[0].children = contents
+      //     if (self.selectionsn == '') {
+      //       self.gatewaydata[0].children[0].buttontype = 'primary'
+      //       // 初始化选中
+      //       self.handleTreeClick(self.gatewaydata[0].children[0])
+      //       self.selectionsn = self.gatewaydata[0].children[0].sn
       //     }
-      //     console.log(contents)
-      //     //有值代表需要更新在线状态  没有值代表第一次进来需要初始化WS连接
-      //     if(message_obj) {
-      //         for(let j=0;j<self.gatewaydata[0].children.length;j++){
-      //             let isonline = false;
-      //             for(let i=0;i<message_obj.length;i++){
-      //                 if(self.gatewaydata[0].children[j].sn == message_obj[i].sn){
-      //                     isonline = true;
-      //                 }
-      //             }
-      //             if(isonline){
-      //                 self.gatewaydata[0].children[j].color = '#19be6b';
-      //             }else{
-      //                 self.gatewaydata[0].children[j].color = '#bbbec4';
-      //             }
-      //         }
-      //     }
-      // }).catch( function(response) {
-      //     self.$util.logout(self,response);
-      // });
+      
+      //   }).catch((response) => {
+      //     console.log(response)
+      //   })
+
+
     },
     remove (root, node, data) {
       const parentKey = root.find(el => el === node).parent

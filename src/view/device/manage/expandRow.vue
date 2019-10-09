@@ -26,6 +26,7 @@
     </div>
 </template>
 <script>
+import {getsensors} from '@/api/device'
     export default {
         props: {
             row: String
@@ -38,18 +39,25 @@
          methods: {
              initEx(pid){
                 let self = this;
-                this.$axios.get('/iotplant/sensor/getsensors?pid='+pid, {}, {
-                    headers: {
-                        "Content-Type":"application/json;charset=utf-8"
-                    },
-                }).then(function(response) {
-                    console.log(999)
-                    console.log(response.data.data)
+                getsensors(pid).then(response => {
                     self.sdata = response.data.data;
-
-                }).catch( function(response) {
+                }).catch((response) => {
                     console.log(response)
-                });
+                })
+
+
+                // this.$axios.get('/iotplant/sensor/getsensors?pid='+pid, {}, {
+                //     headers: {
+                //         "Content-Type":"application/json;charset=utf-8"
+                //     },
+                // }).then(function(response) {
+                //     console.log(999)
+                //     console.log(response.data.data)
+                //     self.sdata = response.data.data;
+
+                // }).catch( function(response) {
+                //     console.log(response)
+                // });
              }
          },
          mounted () {
