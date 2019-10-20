@@ -29,7 +29,7 @@
 	                    <i-col span="12" class="text-align-right">
 							<Input v-model="table.keywords" placeholder="请输入搜索内容..." style="width: 200px" />
 	                        <span @click="handleSearch(1)" style="margin: 0 10px;"><Button type="primary" icon="search">搜索</Button></span>
-	                        <Button @click="handleCancel" icon="ios-shuffle-strong" type="ghost">清除</Button>
+	                        <Button @click="handleCancel" icon="ios-shuffle-strong" type="primary">清除</Button>
 						</i-col>
                     </Row>
                     <Row class="margin-top-10">
@@ -45,6 +45,7 @@
 </template>
 
 <script>
+import {productmanage ,productdelete } from '@/api/product'
 export default {
     name: 'product-manage',
     data () {
@@ -131,22 +132,20 @@ export default {
         	if(order=='normal'){key = '';order = '';sort='';}
         	let keywords = this.table.keywords;
         	this.table.loading = true;//loading效果
-			this.$axios.get('/api/product/pagedata?page='+current+'&size='+pagesize+'&sort='+sort+'&keywords='+keywords, {}, {
-		    	headers: {
-		        	"Content-Type":"application/json;charset=utf-8"
-		       	},
-		    }).then(function(response) {
-		    	self.table.loading = false;//取消loading效果
-		        if(response.data.totalElements>0) {
-		        	self.page.total = response.data.totalElements;
-		        	self.data = response.data.content;
-		        }else{
-		        	self.page.total = 0;
-		        	self.data = [];
-		        }
-		    }).catch( function(response) {
-		       	self.$util.logout(self,response);
-		    });
+			productmanage(current,pagesize,sort,keywords).then(function(response) {
+				console.log(response);
+				self.table.loading = false; // 取消loading效果
+				if (response.data.totalElements > 0) {
+				self.page.total = response.data.totalElements;
+				self.data = response.data.content;
+				} else {
+				self.page.total = 0;
+				self.data = [];
+				}
+				self.table.selection = [];
+			}).catch(function(response) {
+				self.$util.logout(self, response);
+			});
         },
         handleCancel () {
         	this.table.keywords = '';
@@ -238,17 +237,15 @@ export default {
 			        		productids += flag + selection[i].id;
 			        		flag = ',';
 			        	}
-			        	this.$axios.delete('/api/product/delete?productids='+productids, {}, {
-					    	headers: {
-					        	"Content-Type":"application/json;charset=utf-8"
-					       	},
-					    }).then(function(response) {
-					    	modal.remove();
-					    	self.$Message.warning('删除成功!');
-					        self.handleSearch();
-					    }).catch( function(response) {
-					       	console.log(response)
-					    });
+			        	productdelete(productids).then(function(response) {
+							modal.remove();
+							self.$Message.success("删除成功!");
+							self.table.selection = [];
+							self.handleSearch();
+						})
+						.catch(function(response) {
+							console.log(response);
+						});
         			}
         		});
         	}
