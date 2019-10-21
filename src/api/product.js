@@ -1,8 +1,8 @@
 import axios from '@/libs/api.request'
 
-export const getsensors = (param) => {
+export const getnodes = (param) => {
   return axios.request({
-    url: '/iotplant/sensor/getsensors',
+    url: '/iotplant/node/getnodes',
     params: {
       pid:param
     },
@@ -18,7 +18,7 @@ export const initTree = () => {
 //产品管理页面
 export const productmanage = (current,pagesize,sort,keywords) => {
   return axios.request({
-    url: '/iotplant/product/pagedata',
+    url: '/iotplant/product/mngpagedata',
     params: {
       page:current,
       current:pagesize,

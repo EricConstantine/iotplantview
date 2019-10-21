@@ -3,7 +3,10 @@
     // @import '../../tables/components/table.less';
     .text-align-right {
     	text-align:right;
-    }
+	}
+	#opt button{
+		margin:2px 5px 5px 0px;
+	}
 </style>
 
 <template>
@@ -12,10 +15,10 @@
             <Col span="24">
                 <Card>
                 	<p slot="title">
-                        <Icon type=""></Icon> 产品管理管理
+                        <Icon type=""></Icon> 产品管理
                     </p>
                     <Row>
-	                    <i-col span="12">
+	                    <i-col span="12" id="opt">
 							<Button type="info" icon="plus-round" @click="handleEdit('add')">新增</Button>
 					        <Button type="success" icon="hammer"  @click="handleEdit('edit')">修改</Button>
 					        <Button type="error" icon="close" @click="handleDelete()">删除</Button>
@@ -33,7 +36,7 @@
 						</i-col>
                     </Row>
                     <Row class="margin-top-10">
-	                    <Table stripe border ref="selection" :columns="columns" :data="data" :loading="table.loading" @on-selection-change="saveSelection" @on-sort-change="changeSort"></Table>
+	                    <Table stripe ref="selection" :columns="columns" :data="data" :loading="table.loading" @on-selection-change="saveSelection" @on-sort-change="changeSort"></Table>
                     </Row>
                     <Row class="margin-top-10">
                     	<Page @on-change="changePage" @on-page-size-change="changePageSize" :current="page.current" :total="page.total" :page-size="page.pagesize" :page-size-opts="page.pagesizeopts" show-total show-elevator show-sizer></Page>
@@ -46,6 +49,8 @@
 
 <script>
 import {productmanage ,productdelete } from '@/api/product'
+import Cookies from "js-cookie";
+import expandRow from "./expandRowRro.vue";
 export default {
     name: 'product-manage',
     data () {
@@ -67,15 +72,17 @@ export default {
                 order: 'desc' 
             },
             columns: [
-            	//
-            	//sortable: 'custom'
-            	
-					
 					{
 	            		key: 'id',
 	                    type: 'selection',
 	                    width: 60,
 	                    align: 'center'
+	                }
+					,
+	                {
+	            		key: 'id',
+	                    title: 'SN',
+	                    sortable: 'custom'
 	                }
 					,
 	                {
@@ -96,6 +103,29 @@ export default {
 	                    sortable: 'custom'
 	                }
 					,
+					 {
+	            		key: 'nodestr',
+	                    title: '节点名称',
+	                    sortable: 'custom'
+	                }
+					,
+					{
+						type: "expand",
+						ellipsis: true,
+						width: 30,
+						// tooltip : true, 2.0 不支持
+						sortable: "custom",
+						className: "expandcolumn",
+						render: (h, params) => {
+							console.log("-------------");
+							console.log(params.row.id);
+							return h(expandRow, {
+							props: {
+								row: params.row.id
+							}
+							});
+						}
+					},
 	                {
 	            		key: 'creator',
 	                    title: '创建者',
