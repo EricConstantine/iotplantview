@@ -74,7 +74,8 @@ git clone https://github.com/iview/iview-admin.git
 
 // install dependencies
 npm install
-
+npm install mqtt@1.14.1 --save
+npm install vue-baidu-map --save
 // develop
 npm run dev
 ```
