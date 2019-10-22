@@ -141,7 +141,7 @@ export default [
           icon: 'ios-paper',
           title: '设备列表'
         },
-        component: () => import('@/view/product/product-manage.vue')
+        component: () => import('@/view/product/product-list.vue')
       },
       {
         path: 'product_manage',

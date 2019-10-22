@@ -9,9 +9,9 @@ export const getnodes = (param) => {
     method: 'post'
   })
 }
-export const initTree = () => {
+export const getProductTree = () => {
   return axios.request({
-    url: '/iotplant/device/pagedata?page=0&size=10000&sort=name,asc',
+    url: '/iotplant/product/pagedata',
     method: 'get'
   })
 }
