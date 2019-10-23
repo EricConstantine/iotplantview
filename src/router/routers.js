@@ -163,6 +163,26 @@ export default [
       }]
   },
   {
+    path: '/deviceMn',
+    name: 'deviceMn',
+    component: Main,
+    meta: {
+      icon: 'md-planet',
+      title: '组件'
+    },
+    children: [
+      {
+        path: 'deviceMn',
+        name: 'deviceMn',
+        meta: {
+          icon: 'ios-paper',
+          title: '设备列表'
+        },
+        component: () => import('@/view/deviceMn/deviceMn.vue')
+      },
+    ]
+  },
+  {
     path: '/message',
     name: 'message',
     component: Main,

@@ -39,9 +39,9 @@
             </Card>
         </Col>
         <Col span="18">
-            <div class="demo-tabs-style1 " style="margin-bottom:0px;background-color:#fff;">
+            <div v-show="isPro" class="demo-tabs-style1 " style="margin-bottom:0px;background-color:#fff;">
                <Card dis-hover :style="panestyle">
-                <p slot="title">设备信息</p>
+                <p slot="title">产品信息</p>
                 <Row>
                     <Col span='12'>
                         <span class='title'>产品序列号:</span><span>{{curproduct.id}}</span>
@@ -73,9 +73,31 @@
                 </Row>
                 <Row style="margin-top:20px">
                     <Table border :columns="nodecolumn" :data="curnodedata">
-                        <!-- <template slot-scope="{ row }" slot="name">
-                            <strong>传感器数据</strong>
-                        </template> -->
+                    </Table>
+                </Row>
+            </Card>
+            </div>
+             <div v-show="!isPro" class="demo-tabs-style1 " style="margin-bottom:0px;background-color:#fff;">
+               <Card dis-hover :style="panestyle">
+                <p slot="title">设备信息</p>
+                <Row>
+                    <Col span='12'>
+                        <span class='title'>设备序列号:</span><span>{{curdevice.id}}</span>
+                    </Col>
+                    <Col span='12'>
+                        <span class='title'>设备名称:</span><span>{{curdevice.name}}</span>
+                    </Col>
+                </Row>
+                <Row>
+                    <Col span='12'>
+                        <span class='title'>创建时间:</span><span>{{curdevice.createtime}}</span>
+                    </Col>
+                    <Col span='12'>
+                        <span class='title'>更新时间:</span><span>{{curdevice.updatetime}}</span>
+                    </Col>
+                </Row>
+                <Row style="margin-top:20px">
+                    <Table border :columns="nodecolumnDev" :data="curdevdata">
                         <template slot-scope="{ row, index }" slot="action">
                             <Button type="primary" size="small" style="margin-right: 5px" @click="dataset(row)">数据下置</Button>
                             <Button type="primary" size="small" style="margin-right: 5px" @click="openset = true">实时曲线</Button>
@@ -89,13 +111,14 @@
     </Row>
 </template>
 <script>
-    import {getProductTree,getnodes} from '@/api/product'
+    import {getProductTree,getnodes,getDevice} from '@/api/product'
     import Cookies from 'js-cookie';
     const uuidv1 = require('uuid/v1');
     const moment = require('moment');
     export default {
         data () {
             return {
+                isPro:true,//区分选中的是产品还是设备
                 selectionid:'',//默认选中的id
                 treestyle: {
                     height: ''
@@ -103,9 +126,37 @@
                 panestyle: {
                     height: ''
                 },
-                curproduct:{},
-                curnodedata:[],
+                curdevice:{},//当前选中的设备
+                curproduct:{},//当前选中的产品
+                curdevdata:[],//当前设备信息
+                curnodedata:[],//当前选中的节点信息
                 nodecolumn: [
+                    {
+                    title: '名称',
+                    key: 'name'
+                    },
+                    {
+                    title: '描述',
+                    key: 'describes'
+                    },
+                    {
+                    title: 'KEY',
+                    key: 'skey'
+                    },
+                    {
+                    title: '读写类型',
+                    key: 'rwtype'
+                    },
+                    {
+                    title: '数据类型',
+                    key: 'datatype'
+                    },
+                    {
+                    title: '单位',
+                    key: 'sunit'
+                    }
+                ],
+                nodecolumnDev: [
                     {
                     title: '名称',
                     key: 'name'
@@ -144,7 +195,7 @@
                 },
                gatewaydata: [
                     {
-                        title: '设备列表',
+                        title: '产品列表',
                         expand: true,
                         render: (h, { root, node, data }) => {
                             return h('span', {
@@ -181,6 +232,22 @@
             };
         },
         methods: {
+            //异步加载数据不要了
+            // loadData (item, callback) {
+            //     console.log(999)
+            //     getDevice(item.id).then(response => {
+            //         //self.curnodedata = response.data.data
+            //         console.log(response.data.data)
+            //         let data = response.data.data;
+            //         let result = [];
+            //         for(let i=0;i<data.length;i++){
+                        
+            //         }
+            //         callback(response.data.data);
+            //     }).catch((response) => {
+            //         console.log(response)
+            //     })
+            // },
             //初始化树的高度
             initHight () {
                 this.treestyle.height = window.innerHeight - 185 + 'px'
@@ -214,16 +281,7 @@
                             },
                             on: {
                                 click: () => { 
-                                    console.log('wwwwwwwwwwwwwwwwww')
-                                    console.log(data) 
                                     this.handleTreeClick(data)
-                                    //初始化树节点的选中效果
-                                    this.selectionsn = data.id;//当前选中的sn
-                                    for(let i=0;i<this.gatewaydata[0].children.length;i++){
-                                        let thissn = this.gatewaydata[0].children[i].id;
-                                        this.gatewaydata[0].children[i].buttontype = 'text';
-                                        if(data.id == thissn) this.gatewaydata[0].children[i].buttontype = 'primary';
-                                    }
                                 },
                                 hover: () => { 
                                     //console.log(11)
@@ -235,17 +293,39 @@
             },
             handleTreeClick (data) {
                 // 初始化基本信息列表
-                console.log('选中事件')
-                console.log(data)
-                this.curproduct = data
+                this.selectionid = data.id;
                 let self = this
-                getnodes(data.id).then(response => {
-                    console.log("接口返回")
-                    console.log(response)
-                    self.curnodedata = response.data.data
-                }).catch((response) => {
-                    console.log(response)
-                })
+                var find = function(arr){
+                    arr.forEach((item) => {
+                        if(item.id==self.selectionid){
+                            item.buttontype = 'primary';
+                        }else{
+                            item.buttontype = 'text';
+                        }
+                        if(item.children && item.children.length > 0){
+                            find(item.children);
+                        }
+                    })
+                }
+                find(this.gatewaydata[0].children);//所有按钮取消选中
+                if(data.type == 'Pro'){
+                    this.isPro = true;
+                    this.curproduct = data;
+                    getnodes(data.id).then(response => {
+                        self.curnodedata = response.data.data
+                    }).catch((response) => {
+                        console.log(response)
+                    })
+                }else{
+                    this.isPro = false;
+                    this.curdevice = data;
+                    getnodes(data.pid).then(response => {
+                        self.curdevdata = response.data.data
+                    }).catch((response) => {
+                        console.log(response)
+                    })
+                }
+
             },
             initcontent (message_obj) {
                 // 页面刚进入时开启长连接
@@ -254,32 +334,38 @@
                 getProductTree().then(response => {
                     console.log('初始化产品树')
                     console.log(response)
+                    console.log(response.data)
                     let contents = []
-                    for (let i = 0; i < response.data.content.length; i++) {
+                    for (let i = 0; i < response.data.length; i++) {
                         let content = { expand: true }
-                        content.title = response.data.content[i].name + '-' + response.data.content[i].describes
-                        if (self.selectionid == response.data.content[i].id) {
+                        content.title = response.data[i].name + '-' + response.data[i].describes
+                        if (self.selectionid == response.data[i].id) {
                             content.buttontype = 'primary'
                         } else {
                             content.buttontype = 'text'
                         }
                         if (i == 0) content.selected = true
-                        content.id = response.data.content[i].id
-                        content.name = response.data.content[i].name
-                        content.describes = response.data.content[i].describes
-                        content.treaty = response.data.content[i].treaty
-                        content.createtime = response.data.content[i].createtime
-                        content.updatetime = response.data.content[i].updatetime
-                        content.creator = response.data.content[i].creator
+                        content.id = response.data[i].id
+                        content.name = response.data[i].name
+                        content.describes = response.data[i].describes
+                        content.treaty = response.data[i].treaty
+                        content.createtime = response.data[i].createtime
+                        content.updatetime = response.data[i].updatetime
+                        content.creator = response.data[i].creator
                         content.color = '#bbbec4'
+                        content.type = 'Pro'
+                        console.log()
+                        if(response.data[i].children.length>0){
+                            content.children = response.data[i].children;
+                        }
                         contents.push(content)
                     }
                     self.gatewaydata[0].children = contents
-                    if (self.selectionsn == '') {
+                    if (self.selectionid == '') {
                         self.gatewaydata[0].children[0].buttontype = 'primary'
                         // 初始化选中
                         self.handleTreeClick(self.gatewaydata[0].children[0])
-                        self.selectionsn = self.gatewaydata[0].children[0].id
+                        self.selectionid = self.gatewaydata[0].children[0].id
                     }
                     }).catch((response) => {
                     console.log(response)

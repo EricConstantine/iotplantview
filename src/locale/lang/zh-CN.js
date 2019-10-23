@@ -48,6 +48,7 @@ export default {
   product_manage: '产品管理',
   product_edit: '产品添加',
   product_list: '产品列表',
+  deviceMn:'设备模拟器',
   tree_table_page: '树状表格',
   org_tree_page: '组织结构树',
   drag_drawer_page: '可拖动抽屉',

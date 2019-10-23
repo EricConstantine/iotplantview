@@ -1,5 +1,5 @@
 import axios from '@/libs/api.request'
-
+//获取节点信息
 export const getnodes = (param) => {
   return axios.request({
     url: '/iotplant/node/getnodes',
@@ -9,9 +9,19 @@ export const getnodes = (param) => {
     method: 'post'
   })
 }
+//获取设备信息
+export const getDevice = (param) => {
+  return axios.request({
+    url: '/iotplant/device/getDeviceByPid',
+    params: {
+      pid:param
+    },
+    method: 'post'
+  })
+}
 export const getProductTree = () => {
   return axios.request({
-    url: '/iotplant/product/pagedata',
+    url: '/iotplant/product/productTree',
     method: 'get'
   })
 }
