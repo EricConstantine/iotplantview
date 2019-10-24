@@ -19,12 +19,26 @@ export const getDevice = (param) => {
     method: 'post'
   })
 }
+//产品树
 export const getProductTree = () => {
   return axios.request({
     url: '/iotplant/product/productTree',
     method: 'get'
   })
 }
+//产品下拉框
+export const getProductList = () => {
+  return axios.request({
+    url: '/iotplant/product/mngpagedata',
+    params: {
+      page:0,
+      current:10000,
+      keywords:''
+    },
+    method: 'get'
+  })
+}
+
 //产品管理页面
 export const productmanage = (current,pagesize,sort,keywords) => {
   return axios.request({

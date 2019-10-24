@@ -164,7 +164,7 @@ export default [
   },
   {
     path: '/deviceMn',
-    name: 'deviceMn',
+    name: '_deviceMn',
     component: Main,
     meta: {
       icon: 'md-planet',
