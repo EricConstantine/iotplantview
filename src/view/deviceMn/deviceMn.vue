@@ -3,37 +3,38 @@
         <Card :bordered="false">
             <p slot="title">模拟设备</p>
             <Form ref="formValidate" :model="formValidate" :rules="ruleValidate" :label-width="80">
-                <FormItem label="产品" prop="product" style="width:24%;float:left">
+                <FormItem label="产品" prop="product" style="width:30%;float:left">
                     <Select v-model="formValidate.product" placeholder="请选择需要模拟的产品" @on-change="getDevNode()" :disabled="!isEdit">
                         <Option v-for="item in proList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                     </Select>
                 </FormItem>
-                <FormItem label="新设备" prop="isNew" style="width:24%;float:left">
+                <FormItem label="新设备" prop="isNew" style="width:30%;float:left">
                     <Select v-model="formValidate.isNew" placeholder="请选择是否是新设备" :disabled="!isEdit">
                         <Option value="yes">是</Option>
                         <Option value="no">否</Option>
                     </Select>
                 </FormItem>
-                <FormItem label="设备" prop="device" v-show="formValidate.isNew=='no'" style="width:24%;float:left">
+                <FormItem label="设备" prop="device" v-show="formValidate.isNew=='no'" style="width:30%;float:left">
                     <Select v-model="formValidate.device" placeholder="请选择需要模拟的设备" :disabled="!isEdit">
                         <Option v-for="item in devList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                     </Select>
                 </FormItem>
-                <FormItem label="设备" prop="device" v-show="formValidate.isNew=='yes'" style="width:24%;float:left">
+                <FormItem label="设备" prop="device" v-show="formValidate.isNew=='yes'" style="width:30%;float:left">
                     <Input v-model="formValidate.device" placeholder="请输入需要模拟的设备序列号" :disabled="!isEdit"></Input>
                 </FormItem>
-                <FormItem label="节点" prop="node">
-                    <Select v-model="formValidate.node" placeholder="请选择需要模拟的节点" style="width:22%;">
-                        <Option v-for="item in nodeList" :value="item.value" :key="item.value">{{ item.label }}</Option>
-                    </Select>
-                </FormItem>
+               
                 <FormItem >
-                    <div style="float:right;">
-                        <Button type="primary" @click="handleSubmit('formValidate')" v-if="isEdit">连接</Button>
-                        <Button type="error" @click="openEdit()" v-if="!isEdit">断开</Button>
+                    <div style="float:right;margin-right:10px">
+                        <Button type="primary" @click="handleSubmit('formValidate')" v-if="isEdit">发起连接</Button>
+                        <Button type="error" @click="openEdit()" v-if="!isEdit">断开连接</Button>
                         <Button @click="handleReset('formValidate')" style="margin-left: 8px" v-if="isEdit">重置</Button>
                     </div>
                 </FormItem>
+                <FormItem label="节点" prop="node">
+                    <RadioGroup v-model="formValidate.node" type="button">
+                        <Radio v-for="item in nodeList" :label="item.value" :key="item.value">{{ item.label }}</Radio>
+                    </RadioGroup>
+                 </FormItem>
             </Form>
         </Card>
         <Card :bordered="false" style="width:49%;float:left;margin-top:20px;margin-right:1%;height:50%">
@@ -52,27 +53,8 @@
     </div>
 </template>
 <script>
-let mqtt = require('mqtt');
-var client1
-var client2
-const options1 = {
-  port: 61614,
-  connectTimeout: 2000,
-  clientId: 'device'+Math.random(),
-  username: 'admin',
-  password: 'admin',
-  clean: true
-}
-const options2 = {
-  port: 61614,
-  connectTimeout: 2000,
-  clientId: 'server'+Math.random(),
-  username: 'admin',
-  password: 'admin',
-  clean: true
-}
-client1 = mqtt.connect('mqtt://59.110.142.242', options1)
-client2 = mqtt.connect('mqtt://59.110.142.242', options2)
+var client1 = {};
+var client2 = {};
 import {getProductList,getDevice,getnodes} from '@/api/product'
     export default {
         data () {
@@ -109,7 +91,9 @@ import {getProductList,getDevice,getnodes} from '@/api/product'
         methods: {
             //模拟发送方法
             snedDataToServer(){
-
+                let data = {key:this.formValidate.node,value:this.sendData}
+                console.log(JSON.stringify(data))
+                client1.publish("device/"+this.formValidate.device, JSON.stringify(data))
             },
             getProList(){
                 let self = this;
@@ -148,7 +132,7 @@ import {getProductList,getDevice,getnodes} from '@/api/product'
                     let data = response.data.data;
                     let result = [];
                     for(let i=0;i<data.length;i++){
-                        result.push({"value":data[i].id,"label":data[i].name})
+                        result.push({"value":data[i].skey,"label":data[i].name})
                     }
                     self.nodeList = result;
                 }).catch(function(response) {
@@ -162,7 +146,10 @@ import {getProductList,getDevice,getnodes} from '@/api/product'
                 let self = this;
                 this.$refs[name].validate((valid) => {
                     if (valid) {
+                        this.initMqtt();
                         self.isEdit = false;
+                        let data = {key:'online',value:this.formValidate.product}
+                        client1.publish("device/"+this.formValidate.device, JSON.stringify(data))
                         self.$Message.success('Success!');
                     } else {
                         self.$Message.error('Fail!');
@@ -173,6 +160,25 @@ import {getProductList,getDevice,getnodes} from '@/api/product'
                 this.$refs[name].resetFields();
             },
             initMqtt () {
+                let mqtt = require('mqtt');
+                const options1 = {
+                port: 61614,
+                connectTimeout: 2000,
+                clientId: 'device'+Math.random(),
+                username: 'admin',
+                password: 'admin',
+                clean: true
+                }
+                const options2 = {
+                port: 61614,
+                connectTimeout: 2000,
+                clientId: 'server'+Math.random(),
+                username: 'admin',
+                password: 'admin',
+                clean: true
+                }
+                client1 = mqtt.connect('mqtt://59.110.142.242', options1)
+                client2 = mqtt.connect('mqtt://59.110.142.242', options2)
                 // mqtt连接
                 client1.on('connect', (e) => {
                     console.log('发送端连接成功:')
@@ -203,13 +209,11 @@ import {getProductList,getDevice,getnodes} from '@/api/product'
                     let message = JSON.parse(msg.toString());
                     this.$Notice.info({
                         title: '收到一条来自平台的消息',
-                        desc: nodesc ? '' : msg
+                        desc: msg
                     });
                     console.log(999999999)
                     console.log(message)
                     let server = message.value;
-                    
-                    
                 })
                 // 接收消息处理
                 client2.on('message', (topic, msg) => {
@@ -220,7 +224,7 @@ import {getProductList,getDevice,getnodes} from '@/api/product'
                     let message = JSON.parse(msg.toString());
                     this.$Notice.success({
                         title: '收到一条来自'+receivesn+'设备的消息',
-                        desc: nodesc ? '' : msg
+                        desc: msg
                     });
                     console.log(999999999)
                     console.log(message)
@@ -266,7 +270,7 @@ import {getProductList,getDevice,getnodes} from '@/api/product'
         mounted () {
             //初始化产品下拉框
             this.getProList();
-            this.initMqtt();
+            // this.initMqtt();
         },
         created(){
             // this.initHight()
