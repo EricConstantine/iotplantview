@@ -8,7 +8,7 @@
                         <Option v-for="item in proList" :value="item.value" :key="item.value">{{ item.label }}</Option>
                     </Select>
                 </FormItem>
-                <FormItem label="新设备" prop="isNew" style="width:30%;float:left">
+                <FormItem label="新设备" prop="isNew" style="width:20%;float:left">
                     <Select v-model="formValidate.isNew" placeholder="请选择是否是新设备" :disabled="!isEdit">
                         <Option value="yes">是</Option>
                         <Option value="no">否</Option>
@@ -31,24 +31,45 @@
                     </div>
                 </FormItem>
                 <FormItem label="节点" prop="node">
-                    <RadioGroup v-model="formValidate.node" type="button">
-                        <Radio v-for="item in nodeList" :label="item.value" :key="item.value">{{ item.label }}</Radio>
-                    </RadioGroup>
+                    <CheckboxGroup v-model="formValidate.node" @on-change="changeNode()">
+                        <Checkbox v-for="item in nodeList" :label="item.value" :key="item.value">
+                            <Icon type="ios-cube" />
+                            <span>{{ item.label }}</span>
+                        </Checkbox>
+                    </CheckboxGroup>
+                    
                  </FormItem>
             </Form>
         </Card>
-        <Card :bordered="false" style="width:49%;float:left;margin-top:20px;margin-right:1%;height:50%">
+        <Card :bordered="false" style="width:49%;float:left;margin-top:20px;margin-right:1%;height:auto">
             <p slot="title">模拟发送数据</p>
             <p>
-                <Input v-model="sendData" type="textarea" :autosize="{minRows: 5,maxRows: 10}" placeholder="请输入要发送的消息..."></Input>
+                <Form ref="formSendData" :model="formSendData" :label-width="80" style="width: 100%">
+                    <FormItem
+                            v-for="(item, index) in formSendData.items"
+                            :key="index"
+                            :label="item.label"
+                            :prop="'items.' + index + '.msg'"
+                            :rules="{required: true, message: item.label +' 节点不能为空', trigger: 'blur'}">
+                        <Row>
+                            <Col span="8">
+                                <Input size="small" type="text" v-model="item.value" readonly></Input>
+                            </Col>
+                            <Col span="16">
+                                <Input size="small" icon="ios-cube" type="text" v-model="item.msg" placeholder="请输入节点数据"></Input>
+                            </Col>
+                        </Row>
+                    </FormItem>
+                </Form>
             </p>
-            <Button type="success" @click="snedDataToServer()" style="float:right;margin-top:5px" v-if="!isEdit">发送</Button>
+            <Button type="success" @click="snedDataToServer()" style="float:right;margin-top:5px;margin-bottom:5px" v-if="!isEdit">发送</Button>
         </Card>
-        <Card :bordered="false" style="width:49%;float:left;margin-top:20px;margin-left:1%;height:50%">
+        <Card :bordered="false" style="width:49%;float:left;margin-top:20px;margin-left:1%;height:auto">
             <p slot="title">模拟接收数据</p>
             <p>
-                <Input v-model="receiveData" type="textarea" :autosize="{minRows: 5,maxRows: 10}"></Input>
+                <Tag v-for="(item, index) in receiveData" :key="index"  type="dot"  @on-close="cloesTag(index)" closable color="success">{{item}}</Tag>
             </p>
+            <Button type="info" @click="cleanReceive()" style="float:right;margin-top:5px;margin-bottom:5px" v-if="!isEdit">清空</Button>
         </Card>
     </div>
 </template>
@@ -59,17 +80,20 @@ import {getProductList,getDevice,getnodes} from '@/api/product'
     export default {
         data () {
             return {
-                sendData:'',
-                receiveData:'',
+                sendData:[],
+                receiveData:[],
                 isEdit:true,//是否可编辑
                 proList:[],
                 devList:[],
                 nodeList:[],
+                formSendData:{
+                    items:[]
+                },
                 formValidate: {
                     product: '',
                     device: '',
                     isNew: 'no',
-                    node: ''
+                    node: []
                 },
                 ruleValidate: {
                     product: [
@@ -82,18 +106,68 @@ import {getProductList,getDevice,getnodes} from '@/api/product'
                         { required: true, message: '请选择是否是新设备', trigger: 'change' }
                     ],
                     node: [
-                        { required: true, message: '请选择要模拟的节点', trigger: 'change' }
+                        { required: true, type: 'array', min: 1, message: '请选择要模拟的节点', trigger: 'change' }
                     ],
                    
                 }
             }
         },
         methods: {
+            cloesTag(i){
+                this.receiveData.splice(i)
+            },
+            cleanReceive(){
+                this.receiveData=[];
+            },
+            getCurTime(){
+                var myDate = new Date();             
+                var year=myDate.getFullYear();        //获取当前年
+                var month=myDate.getMonth()+1;   //获取当前月
+                var date=myDate.getDate();            //获取当前日
+                var h=myDate.getHours();              //获取当前小时数(0-23)
+                var m=myDate.getMinutes();          //获取当前分钟数(0-59)
+                var s=myDate.getSeconds();
+                var now=year+'-'+this.getNow(month)+"-"+this.getNow(date)+" "+this.getNow(h)+':'+this.getNow(m)+":"+this.getNow(s);
+                return now;
+            },
+            getNow(s) {
+                return s < 10 ? '0' + s: s;
+            },
+            //改变节点，改变模拟发送接口
+            changeNode(){
+                let nodeList = this.nodeList;
+                let checkdata = this.formValidate.node;
+                let resultData = [];
+                console.log(checkdata)
+                for(let i=0;i<checkdata.length;i++){
+                    for(let j=0;j<nodeList.length;j++){
+                        if(checkdata[i] == nodeList[j].value){
+                            resultData.push(nodeList[j]);
+                            break;
+                        }
+                    }
+                }
+                console.log(resultData)
+                this.formSendData.items = resultData;
+            },
             //模拟发送方法
             snedDataToServer(){
-                let data = {key:this.formValidate.node,value:this.sendData}
-                console.log(JSON.stringify(data))
-                client1.publish("device/"+this.formValidate.device, JSON.stringify(data))
+                 let self = this;
+                 this.$refs['formSendData'].validate((valid) => {
+                    if (valid) {
+                        this.initMqtt();
+                        self.isEdit = false;
+                        let formData = this.formSendData.items;
+                        let result = [];
+                        for(let i=0;i<formData.length;i++){
+                            result.push({key:formData[i].value,value:formData[i].msg})
+                        }
+                        client1.publish("device/"+this.formValidate.device, JSON.stringify(result))
+                        self.$Message.success('数据发送成功!');
+                    } else {
+                        self.$Message.error('请完善节点数据!');
+                    }
+                })
             },
             getProList(){
                 let self = this;
@@ -113,7 +187,7 @@ import {getProductList,getDevice,getnodes} from '@/api/product'
                 this.devList = [];
                 this.nodeList = [];
                 this.formValidate.device = '';
-                this.formValidate.node = '';
+                this.formValidate.node = [];
                 let pid = this.formValidate.product;
                 let self = this;
                 getDevice(pid)
@@ -141,6 +215,8 @@ import {getProductList,getDevice,getnodes} from '@/api/product'
             },
             openEdit(){
                 this.isEdit = true;
+                client1.end();
+                client2.end();
             },
             handleSubmit (name) {
                 let self = this;
@@ -148,7 +224,7 @@ import {getProductList,getDevice,getnodes} from '@/api/product'
                     if (valid) {
                         this.initMqtt();
                         self.isEdit = false;
-                        let data = {key:'online',value:this.formValidate.product}
+                        let data = [{key:'online',value:this.formValidate.product}]
                         client1.publish("device/"+this.formValidate.device, JSON.stringify(data))
                         self.$Message.success('Success!');
                     } else {
@@ -184,9 +260,9 @@ import {getProductList,getDevice,getnodes} from '@/api/product'
                     console.log('发送端连接成功:')
                     client1.subscribe('server/#', { qos: 1 }, (error) => {
                     if (!error) {
-                        console.log('订阅成功')
+                        console.log('设备订阅成功')
                     } else {
-                        console.log('订阅失败')
+                        console.log('设备订阅失败')
                     }
                     })
                 })
@@ -194,16 +270,16 @@ import {getProductList,getDevice,getnodes} from '@/api/product'
                     console.log('接收端连接成功:')
                     client2.subscribe('device/#', { qos: 1 }, (error) => {
                     if (!error) {
-                        console.log('订阅成功')
+                        console.log('平台订阅成功')
                     } else {
-                        console.log('订阅失败')
+                        console.log('平台订阅失败')
                     }
                     })
                 })
                  // 接收消息处理
                 client1.on('message', (topic, msg) => {
                     let self = this;
-                    console.log('收到来自', topic, '的消息', msg.toString())
+                    console.log('【设备】收到来自', topic, '的消息', msg.toString())
                     let arrtopic = topic.split("/");
                     let receivesn = arrtopic[1];
                     let message = JSON.parse(msg.toString());
@@ -211,8 +287,6 @@ import {getProductList,getDevice,getnodes} from '@/api/product'
                         title: '收到一条来自平台的消息',
                         desc: msg
                     });
-                    console.log(999999999)
-                    console.log(message)
                     let server = message.value;
                 })
                 // 接收消息处理
@@ -222,47 +296,38 @@ import {getProductList,getDevice,getnodes} from '@/api/product'
                     let arrtopic = topic.split("/");
                     let receivesn = arrtopic[1];
                     let message = JSON.parse(msg.toString());
-                    this.$Notice.success({
-                        title: '收到一条来自'+receivesn+'设备的消息',
-                        desc: msg
-                    });
-                    console.log(999999999)
-                    console.log(message)
-                    let message_obj = message.data;
                     
-                    for(let j=0;j<self.gatewaydata[0].children.length;j++){
-                        if(receivesn==self.gatewaydata[0].children[j].sn){
-                            self.gatewaydata[0].children[j].color = '#19be6b';
-                        }
-                    }
-                    if(message.key == 'offline'){
-                        //下线消息
-                        for(let j=0;j<self.gatewaydata[0].children.length;j++){
-                            if(receivesn==self.gatewaydata[0].children[j].sn){
-                                self.gatewaydata[0].children[j].color = '#bbbec4';
+                    console.log(message)
+                    for(let i=0;i<message.length;i++){
+                        if(message[i].key=='online'){
+                            this.$Message.success('设备'+receivesn+'上线了!');
+                        }else{
+                            let str = receivesn+"_"+message[i].key+"_"+message[i].value+"_"+this.getCurTime();
+                            if(this.receiveData.indexOf(str) == -1){
+                                this.receiveData.push(str)
+                                this.$Notice.success({
+                                    title: '【平台】收到来自'+receivesn+'设备,节点为'+message[i].key+'的消息',
+                                    desc: msg
+                                });
                             }
                         }
                     }
-                    if(this.selectionsn != receivesn) return;
-                    //否则把数据传递给子页面
-                    this.mqttdata = message;
-                    
                 })
                  // 断开发起重连
                 client1.on('reconnect', (error) => {
-                    console.log('正在重连:', error)
+                    console.log('设备正在重连:', error)
                 })
                 // 链接异常处理
                 client1.on('error', (error) => {
-                    console.log('连接失败:', error)
+                    console.log('设备连接失败:', error)
                 })
                 // 断开发起重连
                 client2.on('reconnect', (error) => {
-                    console.log('正在重连:', error)
+                    console.log('平台正在重连:', error)
                 })
                 // 链接异常处理
                 client2.on('error', (error) => {
-                    console.log('连接失败:', error)
+                    console.log('平台连接失败:', error)
                 })
             }
             
