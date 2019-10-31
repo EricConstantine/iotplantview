@@ -78,53 +78,53 @@ export default [
   //     }
   //   ]
   // },
-  {
-    path: '/device',
-    name: 'device',
-    component: Main,
-    meta: {
-      icon: 'md-planet',
-      title: '组件'
-    },
-    children: [
-      {
-        path: 'device_list',
-        name: 'device_list',
-        meta: {
-          icon: 'ios-paper',
-          title: '设备列表'
-        },
-        component: () => import('@/view/device/device_list.vue')
-      },
-      {
-        path: 'device_manage',
-        name: 'device_manage',
-        meta: {
-          icon: 'logo-reddit',
-          title: '设备管理'
-        },
-        component: () => import('@/view/device/manage/device_manage.vue')
-      },
-      {
-        path: 'device_edit',
-        name: 'device_edit',
-        meta: {
-          icon: 'logo-octocat',
-          title: '设备新增'
-        },
-        component: () => import('@/view/device/manage/device_edit.vue')
-      },
-      {
-        path: 'maptest',
-        name: 'maptest',
-        meta: {
-          icon: 'logo-octocat',
-          title: '地图测试'
-        },
-        component: () => import('@/view/device/manage/maptest.vue')
-      }
-    ]
-  },
+  // {
+  //   path: '/device',
+  //   name: 'device',
+  //   component: Main,
+  //   meta: {
+  //     icon: 'md-planet',
+  //     title: '组件'
+  //   },
+  //   children: [
+  //     {
+  //       path: 'device_list',
+  //       name: 'device_list',
+  //       meta: {
+  //         icon: 'ios-paper',
+  //         title: '设备列表'
+  //       },
+  //       component: () => import('@/view/device/device_list.vue')
+  //     },
+  //     {
+  //       path: 'device_manage',
+  //       name: 'device_manage',
+  //       meta: {
+  //         icon: 'logo-reddit',
+  //         title: '设备管理'
+  //       },
+  //       component: () => import('@/view/device/manage/device_manage.vue')
+  //     },
+  //     {
+  //       path: 'device_edit',
+  //       name: 'device_edit',
+  //       meta: {
+  //         icon: 'logo-octocat',
+  //         title: '设备新增'
+  //       },
+  //       component: () => import('@/view/device/manage/device_edit.vue')
+  //     },
+  //     {
+  //       path: 'maptest',
+  //       name: 'maptest',
+  //       meta: {
+  //         icon: 'logo-octocat',
+  //         title: '地图测试'
+  //       },
+  //       component: () => import('@/view/device/manage/maptest.vue')
+  //     }
+  //   ]
+  // },
   {
     path: '/product',
     name: 'product',

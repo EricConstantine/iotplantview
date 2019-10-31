@@ -225,6 +225,7 @@ import {getProductList,getDevice,getnodes} from '@/api/product'
                         this.initMqtt();
                         self.isEdit = false;
                         let data = [{key:'online',value:this.formValidate.product}]
+                        console.log(data)
                         client1.publish("device/"+this.formValidate.device, JSON.stringify(data))
                         self.$Message.success('Success!');
                     } else {

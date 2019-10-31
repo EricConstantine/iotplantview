@@ -100,17 +100,43 @@
                     <Table border :columns="nodecolumnDev" :data="curdevdata">
                         <template slot-scope="{ row, index }" slot="action">
                             <Button type="primary" size="small" style="margin-right: 5px" @click="dataset(row)">数据下置</Button>
-                            <Button type="primary" size="small" style="margin-right: 5px" @click="openset = true">实时曲线</Button>
-                            <Button type="primary" size="small" style="margin-right: 5px" @click="openset = true">历史查询</Button>
+                            <Button type="primary" size="small" style="margin-right: 5px" @click="dataset(row)">实时曲线</Button>
+                            <Button type="primary" size="small" style="margin-right: 5px" @click="dataset(row)">历史查询</Button>
                         </template>
                     </Table>
                 </Row>
             </Card>
             </div>
+            <div>
+                <Drawer title="数据下置" :closable="false" v-model="openset" id="setdiv">
+                    <p style="margin-top:50%;margin-bottom:2%">
+                        <Input v-model="dsdata.key">
+                            <span slot="prepend">KEY</span>
+                        </Input>
+                    </p>
+                    <p style="margin-bottom:2%">
+                        <Input v-model="dsdata.value" type="textarea" :rows="4" placeholder="Enter something..." />
+                    </p>
+                    <p>
+                        <Button type="success" long @click="sendData()">SUBMIT</Button>
+                    </p>
+                </Drawer>
+            </div>
         </Col>
     </Row>
 </template>
 <script>
+    let mqtt = require('mqtt');
+    var client
+    const options = {
+    port: 61614,
+    connectTimeout: 2000,
+    clientId: 'webgate'+Math.random(),
+    username: 'admin',
+    password: 'admin',
+    clean: true
+    }
+    client = mqtt.connect('mqtt://59.110.142.242', options)
     import {getProductTree,getnodes,getDevice} from '@/api/product'
     import Cookies from 'js-cookie';
     const uuidv1 = require('uuid/v1');
@@ -118,6 +144,11 @@
     export default {
         data () {
             return {
+                dsdata:{
+                    key: '',
+                    value: '',
+                },
+                openset: false,
                 isPro:true,//区分选中的是产品还是设备
                 selectionid:'',//默认选中的id
                 treestyle: {
@@ -168,6 +199,10 @@
                     {
                     title: 'KEY',
                     key: 'skey'
+                    },
+                     {
+                    title: '实时数据',
+                    key: 'svalue'
                     },
                     {
                     title: '读写类型',
@@ -232,6 +267,15 @@
             };
         },
         methods: {
+            dataset (data) {
+                this.openset = true
+                this.dsdata.key = data.skey
+                console.log(data)
+            },
+            sendData(){
+                client.publish("server/"+this.selectionid, JSON.stringify(this.dsdata))
+                //this.$emit('sendTabData', JSON.stringify(this.dsdata));
+            },
             //异步加载数据不要了
             // loadData (item, callback) {
             //     console.log(999)
@@ -334,29 +378,37 @@
                 getProductTree().then(response => {
                     console.log('初始化产品树')
                     console.log(response)
-                    console.log(response.data)
+                    console.log(response.data.treedata)
                     let contents = []
-                    for (let i = 0; i < response.data.length; i++) {
+                    let onlinedata = response.data.onliendata;
+                    for (let i = 0; i < response.data.treedata.length; i++) {
                         let content = { expand: true }
-                        content.title = response.data[i].name + '-' + response.data[i].describes
-                        if (self.selectionid == response.data[i].id) {
+                        content.title = response.data.treedata[i].name + '-' + response.data.treedata[i].describes
+                        if (self.selectionid == response.data.treedata[i].id) {
                             content.buttontype = 'primary'
                         } else {
                             content.buttontype = 'text'
                         }
                         if (i == 0) content.selected = true
-                        content.id = response.data[i].id
-                        content.name = response.data[i].name
-                        content.describes = response.data[i].describes
-                        content.treaty = response.data[i].treaty
-                        content.createtime = response.data[i].createtime
-                        content.updatetime = response.data[i].updatetime
-                        content.creator = response.data[i].creator
-                        content.color = '#bbbec4'
+                        content.id = response.data.treedata[i].id
+                        content.name = response.data.treedata[i].name
+                        content.describes = response.data.treedata[i].describes
+                        content.treaty = response.data.treedata[i].treaty
+                        content.createtime = response.data.treedata[i].createtime
+                        content.updatetime = response.data.treedata[i].updatetime
+                        content.creator = response.data.treedata[i].creator
+                        content.color = '#47A8BD'
                         content.type = 'Pro'
-                        console.log()
-                        if(response.data[i].children.length>0){
-                            content.children = response.data[i].children;
+                        if(response.data.treedata[i].children.length>0){
+                            let childrendata = response.data.treedata[i].children;
+                            if(onlinedata.length>0){
+                                for(let k=0;k<childrendata.length;k++){
+                                    if(onlinedata.indexOf(childrendata[k].id)>-1){
+                                        childrendata[k].color = '#19be6b'
+                                    }
+                                }
+                            }
+                            content.children = childrendata;
                         }
                         contents.push(content)
                     }
@@ -370,10 +422,81 @@
                     }).catch((response) => {
                     console.log(response)
                     })
+            },
+            mqttMSG () {
+                // mqtt连接
+                client.on('connect', (e) => {
+                    console.log('连接成功:')
+                    client.subscribe('device/#', { qos: 1 }, (error) => {
+                    if (!error) {
+                        console.log('订阅成功')
+                    } else {
+                        console.log('订阅失败')
+                    }
+                    })
+                })
+                // 接收消息处理
+                client.on('message', (topic, msg) => {
+                    let self = this;
+                    console.log('收到来自', topic, '的消息', msg.toString())
+                    let arrtopic = topic.split("/");
+                    let receivesn = arrtopic[1];
+                    let message = JSON.parse(msg.toString());
+                    for(let i=0;i<message.length;i++){
+                        let key = message[i].key;
+                        let data = message[i].value;
+                        if(key=='online'){
+                            for(let j=0;j<self.gatewaydata[0].children.length;j++){
+                                if(self.gatewaydata[0].children[j].id==data){
+                                    for(let k=0;k<self.gatewaydata[0].children[j].children.length;k++){
+                                        if(self.gatewaydata[0].children[j].children[k].id==receivesn){
+                                            self.gatewaydata[0].children[j].children[k].color = '#19be6b';
+                                            return;
+                                        }
+                                    }
+                                }
+                            }
+                        }else if(key == 'offline'){
+                            for(let j=0;j<self.gatewaydata[0].children.length;j++){
+                                if(self.gatewaydata[0].children[j].id==data){
+                                    for(let k=0;k<self.gatewaydata[0].children[j].children.length;k++){
+                                        if(self.gatewaydata[0].children[j].children[k].id==receivesn){
+                                            self.gatewaydata[0].children[j].children[k].color = '#bbbec4';
+                                            return;
+                                        }
+                                    }
+                                }
+                            }
+                        }else if(this.selectionid == receivesn){
+                            //数据存储
+                            console.log('ddddddddddddddddddddd')
+                            console.log(self.curdevdata)
+                            for(let j=0;j<self.curdevdata.length;j++){
+                                if(self.curdevdata[j].skey==key){
+                                    console.log('找到了')
+                                    self.curdevdata[j].svalue = data;
+                                    console.log(self.curdevdata)
+                                }
+                            }
+
+                        }
+                    }
+                    //否则把数据传递给子页面
+                   // this.mqttdata = message;
+                    
+                })
+                // 断开发起重连
+                client.on('reconnect', (error) => {
+                    console.log('正在重连:', error)
+                })
+                // 链接异常处理
+                client.on('error', (error) => {
+                    console.log('连接失败:', error)
+                })
             }
         },
         mounted () {
-            //this.mqttMSG();
+            this.mqttMSG();
             window.onresize = () => {
             return (() => {
                 this.initHight()
