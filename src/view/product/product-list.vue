@@ -371,7 +371,7 @@
                 }
 
             },
-            initcontent (message_obj) {
+            initcontent () {
                 // 页面刚进入时开启长连接
                 let self = this
                 console.log(this.$axios)
@@ -446,16 +446,20 @@
                         let key = message[i].key;
                         let data = message[i].value;
                         if(key=='online'){
-                            for(let j=0;j<self.gatewaydata[0].children.length;j++){
-                                if(self.gatewaydata[0].children[j].id==data){
-                                    for(let k=0;k<self.gatewaydata[0].children[j].children.length;k++){
-                                        if(self.gatewaydata[0].children[j].children[k].id==receivesn){
-                                            self.gatewaydata[0].children[j].children[k].color = '#19be6b';
-                                            return;
-                                        }
-                                    }
-                                }
-                            }
+                            setTimeout(function (){
+                                self.initcontent()
+                            }, 500);
+                            
+                            // for(let j=0;j<self.gatewaydata[0].children.length;j++){
+                            //     if(self.gatewaydata[0].children[j].id==data){
+                            //         for(let k=0;k<self.gatewaydata[0].children[j].children.length;k++){
+                            //             if(self.gatewaydata[0].children[j].children[k].id==receivesn){
+                            //                 self.gatewaydata[0].children[j].children[k].color = '#19be6b';
+                            //                 return;
+                            //             }
+                            //         }
+                            //     }
+                            // }
                         }else if(key == 'offline'){
                             for(let j=0;j<self.gatewaydata[0].children.length;j++){
                                 if(self.gatewaydata[0].children[j].id==data){

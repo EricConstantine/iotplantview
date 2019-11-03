@@ -88,7 +88,8 @@ import {productadd} from '@/api/product'
     	name: 'product-edit',
         data () {
             return {
-				numlist:[1,2,3,4,5],
+				lastid:'',//上个页面的id
+				numlist:['1','2','3','4','5'],
 				index: 1,
 				formDynamic: {
                     items: [
@@ -152,7 +153,7 @@ import {productadd} from '@/api/product'
         	handleInit (){
         		let self = this;
         		self.$Message.info('正在努力加载数据...');
-	        	let productid = this.$route.query.id.toString();
+	        	let productid = this.lastid;
 	        	if(productid && productid.length>0){
 		        	this.$axios.get('/api/product/singledata?productid='+productid, {}, {
 				    	headers: {
@@ -183,12 +184,13 @@ import {productadd} from '@/api/product'
 						console.log(datas)
 						productadd(datas).then(res=>{
 							self.save_loading = false;
+							console.log(res)
 							if (res.data.ok) {
 								self.save_loading = false;
 								self.$router.push({
-								name: "device_manage",
-								query: { refresh: true }
-							});
+									name: "product_manage",
+									query: { refresh: true }
+								});
 							} else {
 								self.$Message.error(res.data.msg);
 								self.save_loading = false;
@@ -207,7 +209,15 @@ import {productadd} from '@/api/product'
            
         },
 	    mounted () {
-	    	this.handleInit();
+			this.handleInit();
+			if(this.$route.query.id==null ||this.$route.query.id == undefined || this.$route.query.id == ''){
+				this.lastid = '';
+			}else{
+				console.log('进入编辑模式')
+				this.lastid = this.$route.query.id.toString();
+				console.log(this.lastid)
+				this.handleInit();
+			}
 	    },
 	    watch: {
 	        '$route' (to) {
